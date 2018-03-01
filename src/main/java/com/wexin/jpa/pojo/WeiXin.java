@@ -1,3 +1,4 @@
+/*
 package com.wexin.jpa.pojo;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -29,3 +30,4 @@ public class WeiXin {
 	
 	
 }
+*/

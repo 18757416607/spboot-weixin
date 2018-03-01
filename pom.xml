@@ -41,12 +41,17 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!--<dependency>
+		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<version>3.1.0</version>
-			&lt;!&ndash;<scope>provided</scope>&ndash;&gt;
-		</dependency>-->
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-all</artifactId>
+			<version>5.15.3</version>
+		</dependency>
 
 
 		<!--<dependency>
