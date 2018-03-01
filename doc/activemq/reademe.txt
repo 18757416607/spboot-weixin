@@ -1,0 +1,38 @@
+1.需要改变activeMQ管控台的账号密码可以在conf下的jetty-realm.properties文件中修改
+
+2.需要改变java连接activeMQ的连接密码时可以在acriveMQ.xml中添加配置,需要在broker标签里加,如下：
+	<!-- Java客户端连接MQ的用户名和密码 安全机制 -->
+	<plugins>
+		<simpleAuthenticationPlugin>
+			<users>
+				<authenticationUser username="wqs" password="wqs" groups="users,admins" />
+			</users>
+		</simpleAuthenticationPlugin>
+	</plugins>
+
+3.修改activeMQ的持久化方式 可以在activeMQ.xml文件中修改数据源配置  默认使用kahadb来持久化,如下:
+	1):
+		<persistenceAdapter>
+			 <!-- 默认使用kahadb  改成mysql数据源(引用下面的mysql-db的bean 可以进行文件全局搜索来查看bean) -->
+			 <jdbcPersistenceAdapter dataSource = "#mysql-db"/>
+			<!-- <kahaDB directory="${activemq.data}/kahadb"/> -->
+		</persistenceAdapter>
+	2):在broker标签下添加:
+		<!-- activeMQ默认使用kahadb来持久化  改成mysql进行持久化 -->
+		<bean id = "mysql-db" class = "org.apache.commons.dbcp.BasicDataSource" destroy-method = "close">
+			<property name = "driverClassName" value = "com.mysql.jdbc.Driver" />
+			<property name = "url" value="jdbc:mysql://localhost:3306/demo?relaxAutoCommit=true"/>
+			<property name = "username" value = "root"/>
+			<property name = "password" value = "root"/>
+			<property name = "maxActive" value = "200"/> <!-- 最大活动连接 -->
+			<property name = "poolPreparedStatements" value = "true"/>
+		</bean>
+    3):看activeMQ版本来引相关jar包  切换持久化方式需要引入三个包,加入到lib文件下
+	  ①:添加mysql启动包,   mysql-connector-java-5.1.5.jar
+	  ②:mysql使用的是什么持久化包也需要加如：dbcp包  commons-dbcp-1.4.jar
+	  ③:添加commons-pool-1.6.jar
+	4):修改好配置后启动activeMQ,若启动成功则mysql数据库会自动创建三张表
+	   ①:activemq-acks (保证消息机制确认表)
+	   ②:activemq-lock (加锁的表)
+	   ③:activemq-msgs (队列数据表)
+	5):以上操作成功后,然后往队列里加数据,会在activemq-msgs表中insert数据,如果把数据消费了,会消除activemq-msgs表中数据
