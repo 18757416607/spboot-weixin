@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wexin.dao.ParkingMapper">
+
+	<!-- 验证数据是否有效 -->
+	<select id="checkDataIsValid" resultType="int" parameterType="java.util.Map">
+		SELECT  COUNT(1) FROM  base_user_car WHERE platenum = #{platenum}
+	</select>
+
+</mapper>
