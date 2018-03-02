@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface UserMapper {
 
-    @Select("SELECT * FROM tb_user WHERE id = #{id}")
+    @Select("SELECT * FROM `wqs-test`.tb_user WHERE id = #{id}")
     User getUserById(Integer id);
 
     @Select("SELECT * FROM tb_user")

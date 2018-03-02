@@ -8,15 +8,15 @@ import java.util.Date;
 public class User {
 
         private int id;
-        private String username;
+        private String name;
         private int age;
         private Date ctm;
 
         public User() {
         }
 
-        public User(String username, int age) {
-            this.username = username;
+        public User(String name, int age) {
+            this.name = name;
             this.age = age;
             this.ctm = new Date();
         }
@@ -29,12 +29,12 @@ public class User {
             this.id = id;
         }
 
-        public String getUsername() {
-            return username;
+        public String getName() {
+            return name;
         }
 
-        public void setUsername(String username) {
-            this.username = username;
+        public void setName(String name) {
+            this.name = name;
         }
 
         public int getAge() {

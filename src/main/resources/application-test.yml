@@ -7,17 +7,12 @@ weixin:
     key: yeyrew
 
 
-mybatis:
-  mapper-locations: classpath:mapping/*.xml
-  type-aliases-package: com.weixin.pojo
-#  config-location: classpath:mapping/mybatis-config.xml
-
 #alibaba的druid数据库连接池配置
 spring:
     datasource:
         driver-class-name: com.mysql.jdbc.Driver
         type: com.alibaba.druid.pool.DruidDataSource
-        url: jdbc:mysql://121.196.222.188:3306/wqs-test?useUnicode=true&characterEncoding=utf8
+        url: jdbc:mysql://121.196.222.188:3306/parking?useUnicode=true&characterEncoding=utf8
         username: root
         password: cabin8879576
         # 使用druid数据源
@@ -47,3 +42,8 @@ spring:
 #    hibernate:
 #      ddl-auto: update
 #    show-sql: true
+
+mybatis:
+  mapper-locations: classpath:mapping/*.xml
+#  type-aliases-package: com.weixin.pojo
+#  config-location: classpath:mapping/mybatis-config.xml

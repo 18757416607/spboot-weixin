@@ -13,7 +13,7 @@ public class Receiver {
     public void testReceiver() throws Exception{
         //第一步：建立ConnectionFacotry工厂对象，需要输入用户名、密码、连接地址,使用默认  tcp协议、ip、port可以在activeMQ.xml文件查看
         ConnectionFactory factory = new ActiveMQConnectionFactory(
-                "wqs","wqs",  /*添加了activemq的安全机制    在acrivemq.xml文件里添加*/
+                "wqs","wqs",  /*添加了activemq的安全机制    在acrivemq.xml文件里添加*/ //Good Day-DNCE
                 /*ActiveMQConnectionFactory.DEFAULT_USER,
                 ActiveMQConnectionFactory.DEFAULT_PASSWORD,*/"tcp://localhost:61616");
 
