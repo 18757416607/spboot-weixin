@@ -7,4 +7,48 @@
 		SELECT  COUNT(1) FROM  base_user_car WHERE platenum = #{platenum}
 	</select>
 
+	<!-- 批量添加未合作停车场信息  -->
+	<insert id="addBatchNonCooperationPark" parameterType="java.util.List">
+		INSERT INTO base_parklist_non_cooperation(name,address,address_loc,createtime,edittime,status,longitude,latitude) VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.name},#{item.address},GeomFromText(#{item.address_loc}),NOW(),NOW(),'00',#{item.longitude},#{item.latitude})
+		</foreach>
+	</insert>
+
+	<!-- 利用经度(longitude)(121)纬度(latitude)(29)查询附近停车场  00：未合作停车场  01：合作停车场 -->
+	<select id="findNearbyPark" parameterType="java.util.Map" resultType="java.util.Map">
+		<![CDATA[
+		SELECT  name,AsText(address_loc) as address_loc,parkid,'00' mark
+		FROM    base_parklist_non_cooperation
+		WHERE   MBRContains(LineString(
+                            Point
+                                    (
+                                    #{latitude} + 0.6 / ( 111.1 / COS(RADIANS(#{longitude}))),
+                                    #{longitude} + 0.6 / 111.1
+                                    ),
+                            Point
+                                    (
+                                    #{latitude} - 0.6 / ( 111.1 / COS(RADIANS(#{longitude}))),
+                                    #{longitude} - 0.6 / 111.1
+                                    )
+                            ),address_loc)
+        UNION ALL
+		SELECT  name,AsText(address_loc) as address_loc,parkid,'11' mark
+		FROM    base_parklist
+		WHERE   MBRContains(LineString(
+                            Point
+                                    (
+                                    #{latitude} + 0.6 / ( 111.1 / COS(RADIANS(#{longitude}))),
+                                    #{longitude} + 0.6 / 111.1
+                                    ),
+                            Point
+                                    (
+                                    #{latitude} - 0.6 / ( 111.1 / COS(RADIANS(#{longitude}))),
+                                    #{longitude} - 0.6 / 111.1
+                                    )
+                            ),address_loc)
+    ]]>
+	</select>
+
+	
 </mapper>

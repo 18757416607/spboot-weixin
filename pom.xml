@@ -119,11 +119,12 @@
 			<!-- <optional>true</optional> -->
 		</dependency>
 
-		<!--<dependency>
+		<!-- 如果大家想要运行项目的话，一定要把spring-boot-starter-tomcat中 <scope>provided</scope>注释掉才可以运行，不然肯定会出错，这点大家一定要注意。 -->
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
-			&lt;!&ndash;<scope>provided</scope>&ndash;&gt;
-		</dependency>-->
+			<scope>provided</scope>
+		</dependency>
 
 		<!-- alibaba的druid数据库连接池 -->
 		<dependency>
