@@ -22,8 +22,16 @@ public class Sender {
         Connection connection = factory.createConnection();
         connection.start();
 
-        //第三步：通过Connection对象创建session会话(上下文环境对象),用于接收消息,参数说明：1.是否开启事务 2.签收模式  一般我们设置自动签收
-        Session session =connection.createSession(Boolean.FALSE,Session.AUTO_ACKNOWLEDGE);
+        //第三步：通过Connection对象创建session会话(上下文环境对象),用于接收消息
+        //       在Receiver中也需要把创建Session的参数设置成一样的
+        // 参数说明： 1.是否开启事务
+        //          2.签收模式
+        //              ①：一般我们设置自动签收
+        //              ②：也可以进行手动签收，收到后调用方法告诉Queue收到了
+        //              ③：也可不给Queue通知,这样可减少一次session交互
+        //Session session =connection.createSession(Boolean.FALSE,Session.AUTO_ACKNOWLEDGE);  //自动签收
+        Session session =connection.createSession(Boolean.FALSE,Session.CLIENT_ACKNOWLEDGE);  //手动签收
+        //Session session =connection.createSession(Boolean.FALSE,Session.DUPS_OK_ACKNOWLEDGE);  //不给Queue签收通知
 
         //第四步：通过session创建Destination对象,指的是一个客户端用来指定生产消息来源的对象,在PTP模式中,Destination被称作Queue即队列
         Destination destination = session.createQueue("firstQueue");
@@ -45,6 +53,12 @@ public class Sender {
             messageProducer.send(destination,textMessage);
             //Thread.sleep(1000);
         }
+        //在创建session的时候设置是否开启事务
+        //提交事务
+        session.commit();
+        //会滚事务
+        //session.rollback();
+
 
         //关闭Connection连接(必须释放Connection,不然连接多了内存会爆)
         if(connection!=null){
