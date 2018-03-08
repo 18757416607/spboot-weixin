@@ -1,4 +1,4 @@
-package com.wexin.activemq;
+package com.weixin.activemq;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 
