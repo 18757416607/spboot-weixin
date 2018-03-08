@@ -41,17 +41,16 @@
 			<optional>true</optional>
 		</dependency>
 
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
-		</dependency>
-
 		<!-- activeMQ -->
-		<dependency>
+		<!--<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-all</artifactId>
 			<version>5.15.3</version>
+		</dependency>-->
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-core</artifactId>
+			<version>5.7.0</version>
 		</dependency>
 
 		<!-- xml处理 -->
@@ -119,12 +118,19 @@
 			<!-- <optional>true</optional> -->
 		</dependency>
 
-		<!-- 如果大家想要运行项目的话，一定要把spring-boot-starter-tomcat中 <scope>provided</scope>注释掉才可以运行，不然肯定会出错，这点大家一定要注意。 -->
+
 		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
+			<!--<scope>provided</scope>-->
+		</dependency>
+		<!-- 如果大家想要运行项目的话，一定要把spring-boot-starter-tomcat中 <scope>provided</scope>注释掉才可以运行，不然肯定会出错，这点大家一定要注意。 -->
+		<!--<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 			<scope>provided</scope>
-		</dependency>
+		</dependency>-->
 
 		<!-- alibaba的druid数据库连接池 -->
 		<dependency>
@@ -157,6 +163,13 @@
 		<!-- alibaba的druid数据库连接池 -->
 
 
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>1.2.46</version>
+		</dependency>
+
+
 	</dependencies>
 
 
@@ -168,6 +181,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
+		<finalName>weixin</finalName>
 	</build>
 
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.wexin.dao.ParkingMapper">
+<mapper namespace="com.weixin.dao.ParkingMapper">
 
 	<!-- 验证数据是否有效 -->
 	<select id="checkDataIsValid" resultType="int" parameterType="java.util.Map">
@@ -18,7 +18,7 @@
 	<!-- 利用经度(longitude)(121)纬度(latitude)(29)查询附近停车场  00：未合作停车场  01：合作停车场 -->
 	<select id="findNearbyPark" parameterType="java.util.Map" resultType="java.util.Map">
 		<![CDATA[
-		SELECT  name,AsText(address_loc) as address_loc,parkid,'00' mark
+		SELECT  name,AsText(address_loc) as address_loc,parkid,'00' mark,x(address_loc) latitude,y(address_loc) longitude,'无' rule,'无' carnum
 		FROM    base_parklist_non_cooperation
 		WHERE   MBRContains(LineString(
                             Point
@@ -33,7 +33,7 @@
                                     )
                             ),address_loc)
         UNION ALL
-		SELECT  name,AsText(address_loc) as address_loc,parkid,'11' mark
+		SELECT  name,AsText(address_loc) as address_loc,parkid,'11' mark,x(address_loc) latitude,y(address_loc) longitude,rule,carnum
 		FROM    base_parklist
 		WHERE   MBRContains(LineString(
                             Point
