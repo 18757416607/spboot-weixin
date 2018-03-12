@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weixin.smallRoutinePay.dao.AppPayMapper">
+
+	<!-- 查看优惠卷是否存在 -->
+	<select id="findCouponIsExist" resultType="java.lang.Integer" parameterType="java.util.Map">
+		SELECT count(1) from base_user_coupon buc
+		where buc.`status` = '00' and buc.username = (
+		SELECT username from base_user_car
+		where platenum = #{platenum}) and buc.deadline >= now() and buc.coupon_owner = #{couponOwner}
+	</select>
+	
+</mapper>
