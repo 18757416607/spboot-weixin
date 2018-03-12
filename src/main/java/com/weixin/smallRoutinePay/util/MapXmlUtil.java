@@ -14,10 +14,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Created by Administrator on 2018/3/1.
@@ -26,11 +23,27 @@ import java.util.TreeMap;
 public class MapXmlUtil {
 
     /**
+     * 加密验签使用  TreeMap转换String
+     * @param param
+     * @return
+     */
+    public static String TreeMapToString(TreeMap<String,String> param) {
+        Iterator<Map.Entry<String, String>> it = param.entrySet().iterator();
+        StringBuffer str = new StringBuffer();
+        while (it.hasNext()) {
+            Map.Entry<String, String> entry = it.next();
+            str.append(entry.getKey()).append("=").append(entry.getValue()).append("&");
+        }
+        return str.substring(0, str.length() - 1);
+    }
+
+
+    /**
      * 加密验签使用  Map转换String
      * @param param
      * @return
      */
-    public static String MapToString(TreeMap<String,String> param){
+    public static String MapToString(Map<String,String> param){
         Iterator<Map.Entry<String, String>> it= param.entrySet().iterator();
         StringBuffer str = new StringBuffer();
         while(it.hasNext()){
@@ -39,6 +52,7 @@ public class MapXmlUtil {
         }
         return  str.substring(0,str.length()-1);
     }
+
 
 
     /**

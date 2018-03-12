@@ -2,6 +2,9 @@ package com.weixin.util;
 
 import com.weixin.pojo.Result;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,11 +28,14 @@ public class ResultUtil {
         if(data==null||data.equals("")){
             result.setData("");
         }else{
-            /*result.setData(data);*/
-            result.setData(splitEncrypt(data));
+            //RSA加密
+            /*result.setData(splitEncrypt(data));*/
+            data = URLEncoder.encode(data,"UTF-8");
+            result.setData(GZIPUtils.compress(data));
         }
         return  result;
     }
+
 
     /**
      * 请求失败
@@ -62,6 +68,10 @@ public class ResultUtil {
             int endNum = 55;   //结束截取的索引
             for(int i = 0;i < size; i++){
                 if(i==size-1){
+                    String leng = msg.substring(startNum,msg.length());
+                    if(leng.length()==0){
+                        break;
+                    }
                     ncryptList.add(SecurityUtils.encrypt(msg.substring(startNum,msg.length())));
                 }else{
                     ncryptList.add(SecurityUtils.encrypt(msg.substring(startNum,endNum)));

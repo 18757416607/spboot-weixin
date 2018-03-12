@@ -17,9 +17,10 @@ public class CodeFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain arg2)
             throws IOException, ServletException {
+        response.setContentType("text/html;charset=UTF-8");
+        response.setContentType("text/plain;charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
-        response.setContentType("text/html;charset=utf-8");
         arg2.doFilter(request,response);
         System.out.println("filter2 doFilter method");
     }

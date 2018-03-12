@@ -12,7 +12,7 @@ public class UuidUtil {
      * @return
      */
     public static String get32UUID(){
-        return UUID.randomUUID().toString().replace("-","");
+        return UUID.randomUUID().toString().replaceAll("-", "").substring(0, 32);
     }
 
 

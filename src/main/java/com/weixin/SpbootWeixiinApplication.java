@@ -14,6 +14,10 @@ import org.springframework.web.filter.CorsFilter;
 @ServletComponentScan
 public class SpbootWeixiinApplication extends SpringBootServletInitializer {
 
+	/**
+	 * 实现SpringBootServletInitializer可以让spring-boot项目在web容器中运行
+	 */
+
 	public static void main(String[] args) {
 		SpringApplication.run(SpbootWeixiinApplication.class, args);
 	}

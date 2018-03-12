@@ -3,7 +3,6 @@ package com.weixin.controller;
 import com.alibaba.fastjson.JSON;
 import com.weixin.pojo.Result;
 import com.weixin.service.ParkingService;
-import com.weixin.smallRoutinePay.util.UrlConnectUtil;
 import com.weixin.util.JsonUtil;
 import com.weixin.util.ResultUtil;
 import com.weixin.util.SecurityUtils;
@@ -42,7 +41,7 @@ public class ParkingController {
      * 利用经度(longitude)(121)纬度(latitude)(29)查询附近停车场
      * @return
      */
-    @PostMapping(value = "/findNearbyPark")
+    @PostMapping(value = "/findNearbyPark",produces = {"application/json;charset=UTF-8;"})
     public Result findNearbyPark(@RequestBody String paramStr){
         try{
             Map paramMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
@@ -57,5 +56,11 @@ public class ParkingController {
             return ResultUtil.requestFaild(e.getMessage());
         }
     }
+
+    @PostMapping(value = "/ttt",produces = {"application/json;charset=UTF-8;"})
+    public Result t()  throws Exception{
+        return ResultUtil.requestSuccess("");
+    }
+
 
 }

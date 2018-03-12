@@ -6,6 +6,8 @@ package com.weixin.smallRoutinePay.model;
  */
 public class WxPayParam {
 
+    //微信下单接口
+    String url = "https://api.mch.weixin.qq.com/pay/unifiedorder";
     //小程序appid
     public String appid = "wx96fa49493e152caf";
     //微信支付的商户id
@@ -27,10 +29,18 @@ public class WxPayParam {
     //终端IP
     public String spbill_create_ip = "";
     //通知地址
-    public String  notify_url = "http://127.0.0.1:8081/weixin/appPay/appPayNotifyUrl";
+    public String  notify_url = "https://mp.weixin.qq.com/weixin/appPay/appPayNotifyUrl";
     //交易类型，小程序支付的固定值为JSAPI
     public String trade_type = "JSAPI";
 
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
 
     public String getAppid() {
         return appid;
