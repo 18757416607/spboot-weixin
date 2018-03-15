@@ -9,9 +9,9 @@
 
 	<!-- 批量添加未合作停车场信息  -->
 	<insert id="addBatchNonCooperationPark" parameterType="java.util.List">
-		INSERT INTO base_parklist_non_cooperation(name,address,address_loc,createtime,edittime,status,longitude,latitude) VALUES
+		INSERT INTO base_parklist_non_cooperation(name,address,address_loc,createtime,edittime,status) VALUES
 		<foreach collection="list" item="item" index="index" separator=",">
-			(#{item.name},#{item.address},GeomFromText(#{item.address_loc}),NOW(),NOW(),'00',#{item.longitude},#{item.latitude})
+			(#{item.name},#{item.address},GeomFromText(#{item.address_loc}),NOW(),NOW(),'00')
 		</foreach>
 	</insert>
 
@@ -20,22 +20,22 @@
 		<![CDATA[
 		SELECT  name,AsText(address_loc) as address_loc,parkid,'00' mark,x(address_loc) latitude,y(address_loc) longitude,'无' carnum
 		FROM    base_parklist_non_cooperation
-		WHERE   MBRContains(LineString(
+		WHERE   status = '00' and MBRContains(LineString(
                             Point
                                     (
-                                    #{latitude} + 2 / ( 111.1 / COS(RADIANS(#{longitude}))),
-                                    #{longitude} + 2 / 111.1
+                                    #{latitude} + 1 / ( 111.1 / COS(RADIANS(#{longitude}))),
+                                    #{longitude} + 1 / 111.1
                                     ),
                             Point
                                     (
-                                    #{latitude} - 2 / ( 111.1 / COS(RADIANS(#{longitude}))),
-                                    #{longitude} - 2 / 111.1
+                                    #{latitude} - 1 / ( 111.1 / COS(RADIANS(#{longitude}))),
+                                    #{longitude} - 1 / 111.1
                                     )
                             ),address_loc)
         UNION ALL
 		SELECT  name,AsText(address_loc) as address_loc,parkid,'11' mark,x(address_loc) latitude,y(address_loc) longitude,carnum
 		FROM    base_parklist
-		WHERE   MBRContains(LineString(
+		WHERE    MBRContains(LineString(
                             Point
                                     (
                                     #{latitude} + 2 / ( 111.1 / COS(RADIANS(#{longitude}))),
@@ -50,5 +50,10 @@
     ]]>
 	</select>
 
+	<!-- 获取所有的合作停车场列表 -->
+	<select id="findPrakList" resultType="java.util.Map">
+		SELECT name,AsText(address_loc) as address_loc,parkid,x(address_loc) latitude,y(address_loc) longitude,carnum,'11' mark FROM base_parklist
+		where address_loc is not null
+	</select>
 	
 </mapper>

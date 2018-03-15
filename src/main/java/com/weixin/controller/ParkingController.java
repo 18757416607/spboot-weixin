@@ -57,9 +57,13 @@ public class ParkingController {
         }
     }
 
-    @PostMapping(value = "/ttt",produces = {"application/json;charset=UTF-8;"})
-    public Result t()  throws Exception{
-        return ResultUtil.requestSuccess("");
+    /**
+     * 获取所有的合作停车场列表
+     * @return
+     */
+    @PostMapping(value = "/findParkList" ,produces = {"application/json;charset=UTF-8;"})
+    public Result findParkList(){
+        return parkingService.findPrakList();
     }
 
 

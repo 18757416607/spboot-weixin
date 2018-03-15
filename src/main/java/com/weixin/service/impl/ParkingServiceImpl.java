@@ -37,7 +37,10 @@ public class ParkingServiceImpl implements ParkingService{
      * @return
      */
     public Result addBatchNonCooperationPark() throws Exception{
-        List<Map<String,Object>> paramList = FileUtils.readeGaoDeMapParkInfo("D:/json.txt");
+        List<Map<String,Object>> paramList = FileUtils.readeGaoDeMapParkInfo("D:/外滩方圆1公里停车场.txt");
+        for(int i = 0;i<paramList.size();i++){
+
+        }
         Integer count = parkingMapper.addBatchNonCooperationPark(paramList);
         return ResultUtil.requestSuccess(count+"条停车场信息批量添加成功");
     }
@@ -60,8 +63,18 @@ public class ParkingServiceImpl implements ParkingService{
                 Map<String,String> temp = list.get(i);
                 if(temp.get("mark").equals("00")){
                     non_cooperationList.add(temp);
+                    temp.put("carstatus","未知");
                 }else if(temp.get("mark").equals("11")){
                     cooperationList.add(temp);
+                    if(temp.get("carnum")!=null&&!"".equals(temp.get("carnum"))){
+                        if(Integer.parseInt(temp.get("carnum"))>20){
+                            temp.put("carstatus","空闲");
+                        }else{
+                            temp.put("carstatus","紧张");
+                        }
+                    }else{
+                        temp.put("carstatus","未知");
+                    }
                 }
                 String name = temp.get("name").toString();
                 if(name.contains("停车场(")){
@@ -78,6 +91,21 @@ public class ParkingServiceImpl implements ParkingService{
             map.put("cooperationList",cooperationList);
             map.put("non_cooperationList",non_cooperationList);
             return ResultUtil.requestSuccess(JSON.toJSON(map).toString());
+        }
+
+    }
+
+
+    /**
+     * 获取所有的合作停车场列表
+     * @return
+     */
+    public Result findPrakList(){
+        try{
+            String result = JSON.toJSON(parkingMapper.findPrakList()).toString();
+            return ResultUtil.requestSuccess(result);
+        }catch (Exception e){
+            return ResultUtil.requestFaild(ResultUtil.REQUESTFAILD);
         }
 
     }

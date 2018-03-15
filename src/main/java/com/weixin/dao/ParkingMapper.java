@@ -35,4 +35,10 @@ public interface ParkingMapper{
      */
     public List<Map<String,String>> findNearbyPark(Map<String,String> param);
 
+    /**
+     * 获取所有的合作停车场列表
+     * @return
+     */
+    public List<Map<String,String>> findPrakList();
+
 }
