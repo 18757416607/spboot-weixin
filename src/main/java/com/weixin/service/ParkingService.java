@@ -32,6 +32,14 @@ public interface ParkingService {
     public Result findNearbyPark(Map<String,String> param) throws  Exception;
 
     /**
+     * 利用经度(longitude)(121)纬度(latitude)(29)查询附近停车场  00：未合作停车场  01：合作停车场
+     * @param param
+     * @return
+     * @throws Exception
+     */
+    public Result findNearbyParkNew(Map<String,String> param) throws  Exception;
+
+    /**
      * 获取所有的合作停车场列表
      * @return
      */

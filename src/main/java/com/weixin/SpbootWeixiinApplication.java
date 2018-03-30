@@ -1,5 +1,6 @@
 package com.weixin;
 
+import com.weixin.springInit.InitWxAccessToken;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -19,7 +20,10 @@ public class SpbootWeixiinApplication extends SpringBootServletInitializer {
 	 */
 
 	public static void main(String[] args) {
-		SpringApplication.run(SpbootWeixiinApplication.class, args);
+		SpringApplication springApplication = new SpringApplication(SpbootWeixiinApplication.class);
+		//springApplication.addListeners(new InitWxAccessToken());  //spring初始化完成时加就启动线程获取微信token
+		springApplication.run(args);
+		//SpringApplication.run(SpbootWeixiinApplication.class, args);
 	}
 
 

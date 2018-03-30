@@ -46,4 +46,9 @@ public class SecurityUtils {
     }
 
 
+    public static void main(String[] args) throws Exception{
+        System.out.println(encrypt("123456"));
+    }
+
+
 }

@@ -32,6 +32,32 @@ public class ResultUtil {
             /*result.setData(splitEncrypt(data));*/
             data = URLEncoder.encode(data,"UTF-8");
             result.setData(GZIPUtils.compress(data));
+           //result.setData(data);
+        }
+        return  result;
+    }
+
+    /**
+     * 请求成功
+     * @param data
+     * @return
+     */
+    public static Result requestSuccess(String data,String msg) throws Exception{
+        Result result = new Result();
+        result.setCode("00");
+        if(msg==null||"".equals(msg)){
+            result.setMsg("request success");
+        }else{
+            result.setMsg(msg);
+        }
+        if(data==null||data.equals("")){
+            result.setData("");
+        }else{
+            //RSA加密
+            /*result.setData(splitEncrypt(data));*/
+            data = URLEncoder.encode(data,"UTF-8");
+            result.setData(GZIPUtils.compress(data));
+            //result.setData(data);
         }
         return  result;
     }
@@ -44,7 +70,8 @@ public class ResultUtil {
     public static  Result requestFaild(String msg){
         Result result = new Result();
         result.setCode("-1");
-        if(msg==null){
+        result.setData(null);
+        if(msg==null||"".equals(msg)){
             result.setMsg(REQUESTFAILD);
         }else{
             result.setMsg(msg);

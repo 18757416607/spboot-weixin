@@ -3,6 +3,8 @@ package com.weixin.controller;
 import com.alibaba.fastjson.JSON;
 import com.weixin.pojo.Result;
 import com.weixin.service.ParkingService;
+import com.weixin.thread.TokenThread;
+import com.weixin.util.Constant;
 import com.weixin.util.JsonUtil;
 import com.weixin.util.ResultUtil;
 import com.weixin.util.SecurityUtils;
@@ -51,6 +53,31 @@ public class ParkingController {
             param.put("longitude",longitude);
             param.put("latitude",latitude);
             return parkingService.findNearbyPark(param);
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResultUtil.requestFaild(e.getMessage());
+        }
+    }
+
+    /**
+     * 利用经度(longitude)(121)纬度(latitude)(29)查询附近停车场
+     * @return
+     */
+    @PostMapping(value = "/findNearbyParkNew",produces = {"application/json;charset=UTF-8;"})
+    public Result findNearbyParkNew(@RequestBody String paramStr){
+        try{
+            Map paramMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
+            String longitude = paramMap.get("longitude").toString();  //搜索经度
+            String latitude = paramMap.get("latitude").toString();    //搜索纬度
+            String mylongitude = paramMap.get("mylongitude").toString();  //用户当前位置经度
+            String mylatitude = paramMap.get("mylatitude").toString();    //用户当前位置纬度
+            Map<String,String> param = new HashMap<String,String>();
+            param.put("longitude",longitude);
+            param.put("latitude",latitude);
+            param.put("mylongitude",mylongitude);
+            param.put("mylatitude",mylatitude);
+            System.out.println(param);
+            return parkingService.findNearbyParkNew(param);
         }catch (Exception e){
             e.printStackTrace();
             return ResultUtil.requestFaild(e.getMessage());

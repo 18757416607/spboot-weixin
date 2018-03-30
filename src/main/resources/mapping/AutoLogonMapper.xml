@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weixin.dao.AutologonMapper">
+
+	<!-- 更新unionid和token -->
+	<update id="updateWechatUser" parameterType="java.util.Map">
+		UPDATE wechat_user
+		<set>
+			<if test="unionid !=null and unionid != ''">unionid = #{unionid},</if>
+			<if test="token !=null and token != ''">token = #{token}</if>
+		</set>
+		WHERE openid = #{openid}
+	</update>
+	
+	
+</mapper>

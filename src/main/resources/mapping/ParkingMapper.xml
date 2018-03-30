@@ -18,7 +18,7 @@
 	<!-- 利用经度(longitude)(121)纬度(latitude)(29)查询附近停车场  00：未合作停车场  01：合作停车场 -->
 	<select id="findNearbyPark" parameterType="java.util.Map" resultType="java.util.Map">
 		<![CDATA[
-		SELECT  name,AsText(address_loc) as address_loc,parkid,'00' mark,x(address_loc) latitude,y(address_loc) longitude,'无' carnum
+		SELECT  name,AsText(address_loc) as address_loc,parkid,'00' mark,x(address_loc) latitude,y(address_loc) longitude,'无' carnum,'无' charge_rule
 		FROM    base_parklist_non_cooperation
 		WHERE   status = '00' and MBRContains(LineString(
                             Point
@@ -33,7 +33,7 @@
                                     )
                             ),address_loc)
         UNION ALL
-		SELECT  name,AsText(address_loc) as address_loc,parkid,'11' mark,x(address_loc) latitude,y(address_loc) longitude,carnum
+		SELECT  name,AsText(address_loc) as address_loc,parkid,'11' mark,x(address_loc) latitude,y(address_loc) longitude,carnum,charge_rule
 		FROM    base_parklist
 		WHERE    MBRContains(LineString(
                             Point
@@ -52,7 +52,7 @@
 
 	<!-- 获取所有的合作停车场列表 -->
 	<select id="findPrakList" resultType="java.util.Map">
-		SELECT name,AsText(address_loc) as address_loc,parkid,x(address_loc) latitude,y(address_loc) longitude,carnum,'11' mark FROM base_parklist
+		SELECT name,AsText(address_loc) as address_loc,parkid,x(address_loc) latitude,y(address_loc) longitude,carnum,'11' mark,charge_rule FROM base_parklist
 		where address_loc is not null
 	</select>
 	
