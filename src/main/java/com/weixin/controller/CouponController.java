@@ -31,6 +31,9 @@ public class CouponController {
     public Result randomAllocationOneCoupon(@RequestBody String paramStr){
         try{
             Map paramMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
+
+            //需要判断是否在活动期限内
+
             Map<String,Object> param = new HashMap<String,Object>();
             param.put("username",paramMap.get("username"));
             return couponService.randomAllocationOneCoupon(param);

@@ -2,15 +2,43 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.weixin.dao.AutologonMapper">
 
-	<!-- 更新unionid和token -->
+
+	<!-- 验证tonken是否存在 -->
+	<select id="getTokenCount" parameterType="java.lang.String" resultType="java.lang.Integer">
+			SELECT COUNT(1) FROM wechat_user WHERE token = #{token}
+	</select>
+
+	<!-- 验证unionid是否存在  手机号是否绑定了unionid -->
+	<select id="getUnionidCount" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT  COUNT(1) FROM wechat_user WHERE unionid = #{unionid}
+	</select>
+
+	<!-- 根据unionid获取token -->
+	<select id="getTokenByUnionid" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT token FROM wechat_user WHERE unionid = #{unionid}
+	</select>
+
+	<!-- 根据手机号获取绑定消息  绑定手机号时验证手机号是否相同 -->
+	<select id="getBindInfoByPhone" parameterType="java.lang.String" resultType="java.util.Map">
+		SELECT openid,nickname,headimgurl,xiu_money FROM wechat_user WHERE  username = #{phone} and status = 1 ORDER BY create_time limit 1
+	</select>
+
+	<!-- 更新WechatUser表记录 -->
 	<update id="updateWechatUser" parameterType="java.util.Map">
 		UPDATE wechat_user
 		<set>
 			<if test="unionid !=null and unionid != ''">unionid = #{unionid},</if>
-			<if test="token !=null and token != ''">token = #{token}</if>
+			<if test="token !=null and token != ''">token = #{token},</if>
+			<if test="status !=null and status != ''">status = #{status}</if>
 		</set>
 		WHERE openid = #{openid}
 	</update>
+
+	<!--  插入一条绑定记录 -->
+	<insert id="insertWechatUser" parameterType="java.util.Map">
+		INSERT INTO wechat_user(username,openid,unionid,token,nickname,headimgurl,xiu_money,status,create_time,edit_time)
+		VALUES(#{phone},#{openid},#{unionid},#{token},#{nickname},#{headimgurl},#{xiu_money},1,now(),now())
+	</insert>
 	
 	
 </mapper>

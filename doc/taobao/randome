@@ -1,0 +1,9 @@
+jar包已定义依赖
+mvn install:install-file -Dfile=C:\Users\Administrator\Desktop\taobao-sdk-java-1455552377940-20160607.jar -DgroupId=com.taobao -DartifactId=taobao-sdk-java -Dversion=1455552377940-20160607 -Dpackaging=jar
+解析：mvn install:install-file -Dfile=要上传的本地包的路径 -DgroupId=包名 -DartifactId=项目名 -Dversion=版本号 -Dpackaging=jar（这个是不变的）可以看看和我上图pom配置的对应
+
+<dependency>
+    <groupId>com.taobao</groupId>
+    <artifactId>taobao-sdk-java</artifactId>
+    <version>1455552377940-20160607</version>
+</dependency>

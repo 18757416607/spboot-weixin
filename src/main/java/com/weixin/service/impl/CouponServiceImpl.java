@@ -31,10 +31,15 @@ public class CouponServiceImpl implements CouponService{
     @Transactional
     public Result randomAllocationOneCoupon(Map<String,Object> param) throws Exception{
 
-        //检测是否领取
-
         param.put("startDate","2018-02-03 13:11:34");  //活动开始时间
         param.put("endDate","2018-02-9 13:11:34");     //活动结束时间
+
+        //判断是否领取过优惠券
+        int isCouponCount = couponMapper.getIsAllocationCoupon(param);
+        if(isCouponCount>0){  //已经领取过优惠券
+            return ResultUtil.requestSuccess(null,"您已经领取过优惠券");
+        }
+
         //活动开始时间和活动结束时间  获取已经分配的优惠券数量
         List<Map<String,Object>> ownerList = couponMapper.getAllocationCountByOwnerAndDate(param);
         Map<String,Object> money_1 = ownerList.get(0);  //一元优惠券已分配的数量

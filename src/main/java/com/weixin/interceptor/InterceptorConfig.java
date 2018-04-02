@@ -17,6 +17,8 @@ public class InterceptorConfig extends WebMvcConfigurationSupport {
         // excludePathPatterns 用户排除拦截
         registry.addInterceptor(new TokenInterceptor())
                 .addPathPatterns("/**")
+                .excludePathPatterns("/autologon/bindPhone")
+                .excludePathPatterns("/autologon/getAliDaYuCheckCode")
                 .excludePathPatterns("/parking/**")
                 .excludePathPatterns("/activity/**");
         super.addInterceptors(registry);

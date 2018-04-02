@@ -169,6 +169,12 @@
 			<version>1.2.46</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.taobao</groupId>
+			<artifactId>taobao-sdk-java</artifactId>
+			<version>1455552377940-20160607</version>
+		</dependency>
+
 
 	</dependencies>
 

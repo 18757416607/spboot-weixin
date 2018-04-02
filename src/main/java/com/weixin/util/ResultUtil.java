@@ -21,7 +21,8 @@ public class ResultUtil {
      * @param data
      * @return
      */
-    public static Result requestSuccess(String data) throws Exception{
+    public static Result
+    requestSuccess(String data) throws Exception{
         Result result = new Result();
         result.setCode("00");
         result.setMsg("request success");
@@ -45,6 +46,35 @@ public class ResultUtil {
     public static Result requestSuccess(String data,String msg) throws Exception{
         Result result = new Result();
         result.setCode("00");
+        if(msg==null||"".equals(msg)){
+            result.setMsg("request success");
+        }else{
+            result.setMsg(msg);
+        }
+        if(data==null||data.equals("")){
+            result.setData("");
+        }else{
+            //RSA加密
+            /*result.setData(splitEncrypt(data));*/
+            data = URLEncoder.encode(data,"UTF-8");
+            result.setData(GZIPUtils.compress(data));
+            //result.setData(data);
+        }
+        return  result;
+    }
+
+    /**
+     * 请求成功
+     * @param data
+     * @return
+     */
+    public static Result requestSuccess(String data,String msg,String code) throws Exception{
+        Result result = new Result();
+        if(code==null||"".equals(code)){
+            result.setCode("00");
+        }else{
+            result.setCode(code);
+        }
         if(msg==null||"".equals(msg)){
             result.setMsg("request success");
         }else{

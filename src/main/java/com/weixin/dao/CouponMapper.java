@@ -15,6 +15,13 @@ import java.util.Map;
 public interface CouponMapper {
 
     /**
+     * 查看某个用户是否已经领取过优惠券
+     * @param param
+     * @return
+     */
+    public int getIsAllocationCoupon(Map<String,Object> param);
+
+    /**
      * java代码随机获取一个owner,根据owner获取一张没分配的优惠券
      * @param param
      * @return

@@ -26,22 +26,43 @@ public class AutologonController {
     private AutologonService autologonService;
 
     /**
-     * 自动登陆
-     * @param request
+     * 绑定手机号
+     * @param paramStr
      * @return
      */
-    @PostMapping(value = "/wxLogin")
-    public Result wxLogin(HttpServletRequest request){
+    @PostMapping(value = "/bindPhone", produces = {"application/json;charset=UTF-8;"})
+    public Result bindPhone(@RequestBody String paramStr) throws Exception {
         try{
-            Map paramMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(request.getParameter("paramStr")));
-            String jsonStr = autologonService.wxLogin(paramMap);
-            return ResultUtil.requestSuccess(jsonStr);
+            Map paramMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
+            if(paramMap.get("phone")==null||"".equals(paramMap.get("phone"))){
+                return ResultUtil.requestFaild("手机号不能为空!");
+            }
+            String token = autologonService.bindPhone(paramMap);
+            return ResultUtil.requestSuccess(token);
         }catch (Exception e){
             e.printStackTrace();
-            return ResultUtil.requestFaild(ResultUtil.REQUESTFAILD);
+            return ResultUtil.requestFaild(e.getMessage());
         }
+
     }
 
+    /**
+     * 获取阿里大于短信验证
+     * @return
+     */
+    @PostMapping(value = "/getAliDaYuCheckCode", produces = {"application/json;charset=UTF-8;"})
+    public Result getAliDaYuCheckCode(@RequestBody String paramStr){
+        try {
+            Map paramMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
+            if(paramMap.get("phone")==null||"".equals(paramMap.get("phone"))){
+                return ResultUtil.requestFaild("手机号不能为空!");
+            }
+            return autologonService.getAliDaYuCheckCode(paramMap.get("phone").toString());
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResultUtil.requestFaild(e.getMessage());
+        }
+    }
 
 
 }
