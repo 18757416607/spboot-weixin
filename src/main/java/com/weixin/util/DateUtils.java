@@ -764,8 +764,7 @@ public class DateUtils {
 
 	public static void main(String[] args) {
 		try {
-			String s = "20180316165654";
-			System.out.println(DateUtils.convertDateFormat(s));
+			System.out.println(compare_date(new Date().getTime(),formatStrToDate1("2018-04-03 11:42:49").getTime()));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

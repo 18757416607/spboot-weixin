@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Administrator on 2018/3/29.
@@ -25,19 +22,28 @@ public class CouponServiceImpl implements CouponService{
 
     /**
      * 随机分配一张优惠券
-     * @param param
      * @return
      */
-    @Transactional
-    public Result randomAllocationOneCoupon(Map<String,Object> param) throws Exception{
+    //@Transactional
+    public Result randomAllocationOneCoupon(String token) throws Exception{
 
-        param.put("startDate","2018-02-03 13:11:34");  //活动开始时间
-        param.put("endDate","2018-02-9 13:11:34");     //活动结束时间
+        Map<String,Object> param = new HashMap<String,Object>();
+        param.put("startDate","2018-04-04 09:11:34");  //活动开始时间
+        param.put("endDate","2018-04-12 09:11:34");     //活动结束时间
+
+        //判断活动是否结束
+
+        String username = couponMapper.getUsernameByToken(token);
+        param.put("username",username);
+
 
         //判断是否领取过优惠券
         int isCouponCount = couponMapper.getIsAllocationCoupon(param);
         if(isCouponCount>0){  //已经领取过优惠券
-            return ResultUtil.requestSuccess(null,"您已经领取过优惠券");
+            System.out.println("您已经领取过优惠券");
+            return ResultUtil.requestSuccess(null,"您已经领取过优惠券","01");
+        }else{
+            System.out.println("没有领券");
         }
 
         //活动开始时间和活动结束时间  获取已经分配的优惠券数量
@@ -96,6 +102,8 @@ public class CouponServiceImpl implements CouponService{
             param.put("deadline", DateUtils.formatDateToStr(DateUtils.addOneDay(new Date(),30)));
             // //给用户分配一张优惠券
             int count = couponMapper.insertAllocationCoupon(param);
+            int cc = couponMapper.insertStatisticsCoupon(param);
+            System.out.println("插入领券记录:"+cc);
             if(count>0){
                 param.put("id",couponMap.get("id"));
                 //发放优惠券后,把此优惠券修改为已分配
@@ -108,7 +116,7 @@ public class CouponServiceImpl implements CouponService{
                 return ResultUtil.requestFaild(null);
             }
         }else{
-            return ResultUtil.requestSuccess(null,"优惠券已发送完,感谢您对一咻的支付!");
+            return ResultUtil.requestSuccess(null,"优惠券已发送完,感谢您对一咻的支付!","02");
         }
     }
 

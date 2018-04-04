@@ -48,4 +48,19 @@ public interface CouponMapper {
      * @return
      */
     public int insertAllocationCoupon(Map<String,Object> param);
+
+    /**
+     * 根据token获取手机号
+     * @param token
+     * @return
+     */
+    public String getUsernameByToken(String token);
+
+    /**
+     *记录领券记录  方便之后统计领券用户
+     * @param param
+     * @return
+     */
+    public int insertStatisticsCoupon(Map<String,Object> param);
+
 }

@@ -17,6 +17,8 @@ public class Constant {
     public final static String WX_GET_ACCESSTOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET";
     //记录token
     public static AccessToken accessToken = null;
+    //获取用户详细信息
+    public final static String WX_DETAIL_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN";
 
 
     //微信接入常量
@@ -33,9 +35,12 @@ public class Constant {
 
     //小程序接口常量
     public final static String XCX_APPID = "wx96fa49493e152caf";//"wxec11f0bc68ebe57d";  //小程序APPID
-    public final static String XCX_APPSECRET = "c3b5170b303e823cde161ca3e7590";//"08e36aca836da7586e5cfc95004e8548"; //小程序开发者密钥
+    public final static String XCX_APPSECRET = "c3b5170b303e823cde161ca3e75902c7";//"08e36aca836da7586e5cfc95004e8548"; //小程序开发者密钥
     //根据前端传的CODE获取openid和UnionID
     public final static String XCX_CODE_URL = "https://api.weixin.qq.com/sns/jscode2session?appid=APPID&secret=SECRET&js_code=JSCODE&grant_type=authorization_code";
+    //获取小程序用户详细信息
+    public final static String XCX_DETAILINIFO_URL = "https://api.weixin.qq.com/sns/jscode2session?appid=APPID&secret=SECRET&js_code=CODE&grant_type=authorization_code";
+
 
 
     //微信消息类型常量

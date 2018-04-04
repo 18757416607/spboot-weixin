@@ -41,6 +41,16 @@
         status,deadline,channel_id,createtime,allowparkid)
         VALUES(#{username},#{coupon_code},#{coupon_name},#{coupon_amount},#{coupon_owner},'01','00',#{deadline},'0',now(),default)
     </insert>
+
+    <!-- 根据token获取手机号 -->
+    <select id="getUsernameByToken" parameterType="java.lang.String" resultType="java.lang.String">
+        SELECT username FROM wechat_user WHERE token = #{token} limit 1
+    </select>
+
+    <!--  记录领券记录  方便之后统计领券用户 -->
+    <insert id="insertStatisticsCoupon" parameterType="java.util.Map">
+        INSERT INTO base_statistics_coupon(username,coupon_amount,createtime) VALUES(#{username},#{coupon_amount},now())
+    </insert>
     
 
 </mapper>

@@ -19,4 +19,11 @@ public interface ActivityMapper {
      */
     public int insertActivity(@Param(value = "activityId") String activityId, @Param(value = "activityName") String activityName, @Param(value = "openid") String openid);
 
+    /**
+     * 根据token获取unionid
+     * @param token
+     * @return
+     */
+    public String getUnionidByToken(String token);
+
 }

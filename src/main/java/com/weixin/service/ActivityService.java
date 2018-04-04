@@ -1,5 +1,7 @@
 package com.weixin.service;
 
+import com.weixin.pojo.Result;
+
 /**
  * Created by Administrator on 2018/3/29.
  */
@@ -11,7 +13,7 @@ public interface ActivityService {
      * @param activityName
      * @return
      */
-    public int activityActiveNum(String activityId,String activityName,String openid);
+    public Result activityActiveNum(String activityId, String activityName, String openid) throws Exception;
 
 
 }

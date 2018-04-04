@@ -1,13 +1,17 @@
+/*
 package com.weixin.filter;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import java.io.IOException;
 
+*/
 /**
  * Created by Administrator on 2018/3/8.
- */
-@WebFilter(urlPatterns = "/*", filterName = "codeFilter")
+ *//*
+
+@WebFilter(urlPatterns = "*/
+/*", filterName = "codeFilter")
 public class CodeFilter implements Filter {
 
     @Override
@@ -30,3 +34,4 @@ public class CodeFilter implements Filter {
     }
 
 }
+*/

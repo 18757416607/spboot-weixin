@@ -5,9 +5,14 @@
 
 	<!-- 添加一个活动信息 -->
 	<insert id="insertActivity">
-		INSERT INTO base_activity_statistics(activityId,activityName,openid,createtime)
-		  VALUES(#{activityId},#{activityName},#{openid},NOW())
+		INSERT INTO base_activity_statistics(activityId,activityName,unionid,createtime)
+		  VALUES(#{activityId},#{activityName},#{unionid},NOW())
 	</insert>
+
+	<!-- 根据token获取unionid -->
+	<select id="getUnionidByToken" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT unionid FROM wechat_user WHERE token = #{token}
+	</select>
 
 
 </mapper>

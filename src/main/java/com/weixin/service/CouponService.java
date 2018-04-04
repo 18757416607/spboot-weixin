@@ -11,10 +11,9 @@ public interface CouponService {
 
     /**
      * 随机分配一张优惠券
-     * @param param
      * @return
      */
-    public Result randomAllocationOneCoupon(Map<String,Object> param)  throws Exception;
+    public Result randomAllocationOneCoupon(String token)  throws Exception;
 
 
 

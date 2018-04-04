@@ -1,5 +1,6 @@
 package com.weixin.service;
 
+import com.sun.org.apache.regexp.internal.RE;
 import com.weixin.pojo.Result;
 
 import java.util.Map;
@@ -35,13 +36,21 @@ public interface AutologonService {
      * @param param
      * @return
      */
-    public String bindPhone(Map<String,Object> param) throws Exception;
+    public Result bindPhone(Map<String,Object> param) throws Exception;
 
     /**
      * 获取阿里大于短信验证
      * @return
      */
     public Result getAliDaYuCheckCode(String phone) throws  Exception;
+
+    /**
+     * 微信小程序授权登陆
+     * @param phone
+     * @param code
+     * @return
+     */
+    public Result authorizationLogin(Map<String,Object> param) throws Exception;
 
 
 }

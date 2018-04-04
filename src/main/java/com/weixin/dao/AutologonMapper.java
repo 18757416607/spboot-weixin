@@ -34,6 +34,13 @@ public interface AutologonMapper {
     public String getTokenByUnionid(String unionid);
 
     /**
+     * 根据unionid获取username(phone)
+     * @param unionid
+     * @return
+     */
+    public String getUserNameByUnionid(String unionid);
+
+    /**
      * 根据手机号获取绑定消息  绑定手机号时验证手机号是否相同
      * @param phone
      * @return

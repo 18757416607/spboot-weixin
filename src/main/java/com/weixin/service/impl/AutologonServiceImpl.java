@@ -16,6 +16,8 @@ import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
@@ -64,17 +66,27 @@ public class AutologonServiceImpl implements AutologonService{
      * @param param
      * @return
      */
-    public String bindPhone(Map<String,Object> param) throws Exception{
-        Map<String,Object> map = autologonMapper.getBindInfoByPhone(param.get("phone").toString());
-        String token  = UuidUtils.get32UUID();
-        int count = 0;
-        if(map==null){  //说明是新用户
-            param.put("token",token);
-            count = autologonMapper.insertWechatUser(param);
-        }else{
-            count = autologonMapper.updateWechatUser(param);
+    public Result bindPhone(Map<String,Object> param) throws Exception{
+        //调用微信官网接口获取unionid
+        String url = Constant.XCX_CODE_URL.replace("APPID",Constant.XCX_APPID).replace("SECRET",Constant.XCX_APPSECRET).replace("JSCODE",param.get("code").toString());
+        JSONObject json =  RequestWx.doGetWx(url);
+        param.put("openid",json.get("openid"));
+        if(json.get("unionid")==null||"".equals(json.get("unionid"))){
+            return ResultUtil.requestFaild("code无效!");
         }
-        return token;
+        String token  = UuidUtils.get32UUID();
+        param.put("token",token);
+        param.put("unionid",json.get("unionid"));
+        //根据手机号获取绑定消息  绑定手机号时验证手机号是否相同
+        Map<String,Object> map = autologonMapper.getBindInfoByPhone(param.get("phone").toString());
+        if(map==null){//说明是新用户
+            param.put("nickname","");
+            param.put("headimgurl","");
+            autologonMapper.insertWechatUser(param);
+        }else{
+            autologonMapper.updateWechatUser(param);
+        }
+        return ResultUtil.requestSuccess(token);
     }
 
     /**
@@ -92,15 +104,52 @@ public class AutologonServiceImpl implements AutologonService{
         req.setRecNum(phone);
         req.setSmsTemplateCode(config.getSms_template_code());
         AlibabaAliqinFcSmsNumSendResponse rsp = client.execute(req);
+        System.out.println("-------------------------------------------");
+        System.out.println(rsp.getBody());
+        System.out.println("-------------------------------------------");
         JSONObject json = JSON.parseObject(rsp.getBody());
-        JSONObject json1 = JSON.parseObject(json.get("alibaba_aliqin_fc_sms_num_send_response").toString());
-        JSONObject json2 = JSON.parseObject(json1.get("result").toString());
-        if(json2.get("msg").toString().equals("OK")){
-            return ResultUtil.requestSuccess(checkCode);
+        if(json.get("alibaba_aliqin_fc_sms_num_send_response")!=null){
+            JSONObject json1 = JSON.parseObject(json.get("alibaba_aliqin_fc_sms_num_send_response").toString());
+            JSONObject json2 = JSON.parseObject(json1.get("result").toString());
+            //if(json2.get("msg").toString().equals("OK")){
+                return ResultUtil.requestSuccess(checkCode);
+            //}
+        }else{
+            JSONObject json1 = JSON.parseObject(json.get("error_response").toString());
+            return ResultUtil.requestFaild(json1.get("sub_msg").toString());
         }
-        return ResultUtil.requestFaild(json2.get("msg").toString());
     }
 
+    /**
+     * 微信小程序授权登陆
+     * @param param
+     * @return
+     */
+    public Result authorizationLogin(Map<String,Object> param) throws Exception {
+        System.out.println("进入微信小程序授权登陆service");
+        String url = Constant.XCX_CODE_URL.replace("APPID",Constant.XCX_APPID).replace("SECRET",Constant.XCX_APPSECRET).replace("JSCODE",param.get("code").toString());
+        JSONObject json =  RequestWx.doGetWx(url);
+        param.put("openid",json.get("openid"));
+        if(json.get("unionid")==null||"".equals(json.get("unionid"))){
+            return ResultUtil.requestFaild("code无效!");
+        }
+        String token  = UuidUtils.get32UUID();
+        param.put("token",token);
+        param.put("unionid",json.get("unionid"));
+        //根据手机号获取绑定消息  绑定手机号时验证手机号是否相同
+        Map<String,Object> map = autologonMapper.getBindInfoByPhone(param.get("phone").toString());
+        if(map==null){//说明是新用户
+            param.put("nickname","");
+            param.put("headimgurl","");
+            autologonMapper.insertWechatUser(param);
+            System.out.println("进入微信小程序授权登陆service-insert");
+        }else{
+            autologonMapper.updateWechatUser(param);
+            System.out.println("进入微信小程序授权登陆service-update");
+
+        }
+        return ResultUtil.requestSuccess(token);
+    }
 
 
 }

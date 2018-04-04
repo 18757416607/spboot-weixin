@@ -6,7 +6,7 @@ package com.weixin.pojo;
 public class Result {
 
     private String code;
-    private String msg;
+    private String msg;   //-1:异常    00:成功  01以上是其他原因
     private Object data;
 
     public String getCode() {

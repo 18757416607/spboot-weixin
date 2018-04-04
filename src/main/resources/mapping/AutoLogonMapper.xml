@@ -15,7 +15,13 @@
 
 	<!-- 根据unionid获取token -->
 	<select id="getTokenByUnionid" parameterType="java.lang.String" resultType="java.lang.String">
-		SELECT token FROM wechat_user WHERE unionid = #{unionid}
+		SELECT token FROM wechat_user WHERE unionid = #{unionid} and status = '1'
+
+	</select>
+
+	<!-- 根据unionid获取username(phone) -->
+	<select id="getUserNameByUnionid" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT username FROM wechat_user WHERE unionid = #{unionid}
 	</select>
 
 	<!-- 根据手机号获取绑定消息  绑定手机号时验证手机号是否相同 -->
@@ -31,13 +37,13 @@
 			<if test="token !=null and token != ''">token = #{token},</if>
 			<if test="status !=null and status != ''">status = #{status}</if>
 		</set>
-		WHERE openid = #{openid}
+		WHERE username = #{phone} and `status` = 1
 	</update>
 
 	<!--  插入一条绑定记录 -->
 	<insert id="insertWechatUser" parameterType="java.util.Map">
 		INSERT INTO wechat_user(username,openid,unionid,token,nickname,headimgurl,xiu_money,status,create_time,edit_time)
-		VALUES(#{phone},#{openid},#{unionid},#{token},#{nickname},#{headimgurl},#{xiu_money},1,now(),now())
+		VALUES(#{phone},#{openid},#{unionid},#{token},#{nickname},#{headimgurl},0,1,now(),now())
 	</insert>
 	
 	
