@@ -37,11 +37,12 @@ public class ActivityController {
             if(paramMap.get("activityName")==null||"".equals(paramMap.get("activityName"))){
                 return ResultUtil.requestFaild("[activityName]参数为空");
             }*/
-            if(paramMap.get("token")==null||"".equals(paramMap.get("token"))){
+            /*if(paramMap.get("token")==null||"".equals(paramMap.get("token"))){
                 return ResultUtil.requestFaild("[token]参数为空");
-            }
+            }*/
             //int count = activityService.activityActiveNum(paramMap.get("activityId").toString(),paramMap.get("activityName").toString(),paramMap.get("openid").toString());
-           return activityService.activityActiveNum("2018-CY","2018春游送券活动",paramMap.get("token").toString());
+           //return activityService.activityActiveNum("2018-CY","2018春游送券活动",paramMap.get("token").toString());
+            return ResultUtil.requestSuccess("踩踩踩踩踩踩");
         }catch (Exception e){
             e.printStackTrace();
             return ResultUtil.requestFaild(e.getMessage());

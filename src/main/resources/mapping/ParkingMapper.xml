@@ -23,30 +23,19 @@
 		WHERE   status = '00' and MBRContains(LineString(
                             Point
                                     (
-                                    #{latitude} + 1 / ( 111.1 / COS(RADIANS(#{longitude}))),
-                                    #{longitude} + 1 / 111.1
+                                    #{latitude} + 0.5 / ( 111.1 / COS(RADIANS(#{longitude}))),
+                                    #{longitude} + 0.5 / 111.1
                                     ),
                             Point
                                     (
-                                    #{latitude} - 1 / ( 111.1 / COS(RADIANS(#{longitude}))),
-                                    #{longitude} - 1 / 111.1
+                                    #{latitude} - 0.5 / ( 111.1 / COS(RADIANS(#{longitude}))),
+                                    #{longitude} - 0.5 / 111.1
                                     )
-                            ),address_loc)
+                            ),address_loc) limit 15
         UNION ALL
 		SELECT  name,AsText(address_loc) as address_loc,parkid,'11' mark,x(address_loc) latitude,y(address_loc) longitude,carnum,charge_rule
 		FROM    base_parklist
-		WHERE    MBRContains(LineString(
-                            Point
-                                    (
-                                    #{latitude} + 2 / ( 111.1 / COS(RADIANS(#{longitude}))),
-                                    #{longitude} + 2 / 111.1
-                                    ),
-                            Point
-                                    (
-                                    #{latitude} - 2 / ( 111.1 / COS(RADIANS(#{longitude}))),
-                                    #{longitude} - 2 / 111.1
-                                    )
-                            ),address_loc)
+		WHERE   xcx_bool = '00'
     ]]>
 	</select>
 

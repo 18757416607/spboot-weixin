@@ -8,6 +8,8 @@ import com.weixin.util.*;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.tomcat.util.codec.binary.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,6 +38,8 @@ import java.util.Map;
 @RestController
 @RequestMapping(value = "/autologon")
 public class AutologonController {
+
+    private final Logger logger = LoggerFactory.getLogger(AutologonController.class);
 
     @Autowired
     private AutologonService autologonService;
@@ -74,13 +78,16 @@ public class AutologonController {
         try{
             Map paramMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
             if(paramMap.get("phone")==null||"".equals(paramMap.get("phone"))){
+                logger.info("自动登陆controller-->绑定手机号-->手机号不能为空:["+paramMap+"]");
                 return ResultUtil.requestFaild("手机号不能为空!");
             }
             if(paramMap.get("code")==null||"".equals(paramMap.get("code"))){
+                logger.info("自动登陆controller-->绑定手机号-->code不能为空:["+paramMap+"]");
                 return ResultUtil.requestFaild("code不能为空!");
             }
             return autologonService.bindPhone(paramMap);
         }catch (Exception e){
+            logger.info("自动登陆controller-->绑定手机号-->"+e.getMessage());
             e.printStackTrace();
             return ResultUtil.requestFaild(e.getMessage());
         }
@@ -95,12 +102,14 @@ public class AutologonController {
     public Result getAliDaYuCheckCode(@RequestBody String paramStr){
         try {
             Map paramMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
-            System.out.println("发送验证码的手机号："+paramMap.get("phone"));
+            logger.info("自动登陆controller-->获取阿里大于短信验证-->参数:["+paramMap+"]");
             if(paramMap.get("phone")==null||"".equals(paramMap.get("phone"))){
-                return ResultUtil.requestFaild("手机号不能为空!");
+                logger.info("自动登陆controller-->获取阿里大于短信验证-->手机号不能为空");
+                return ResultUtil.requestFaild("[phone]参数为空!");
             }
             return autologonService.getAliDaYuCheckCode(paramMap.get("phone").toString());
         }catch (Exception e){
+            logger.info("自动登陆controller-->获取阿里大于短信验证-->"+e.getMessage());
             e.printStackTrace();
             return ResultUtil.requestFaild(e.getMessage());
         }
@@ -117,15 +126,18 @@ public class AutologonController {
     public Result authorizationLogin(String paramStr) throws Exception{
         try{
             Map paramMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
+            logger.info("自动登陆controller-->微信小程序授权登陆-->参数:["+paramMap+"]");
             if(paramMap.get("phone")==null||"".equals(paramMap.get("phone"))){
+                logger.info("自动登陆controller-->微信小程序授权登陆-->[phone]参数为空");
                 return ResultUtil.requestFaild("[phone]参数为空");
             }
             if(paramMap.get("code")==null||"".equals(paramMap.get("code"))){
+                logger.info("自动登陆controller-->微信小程序授权登陆-->[code]参数为空");
                return ResultUtil.requestFaild("[code]参数为空");
             }
-
             return autologonService.authorizationLogin(paramMap);
         }catch (Exception e){
+            logger.info("自动登陆controller-->微信小程序授权登陆-->"+e.getMessage());
             e.printStackTrace();
             return ResultUtil.requestFaild(e.getMessage());
         }

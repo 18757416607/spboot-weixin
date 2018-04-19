@@ -1,6 +1,7 @@
 package com.weixin.service;
 
 import com.weixin.pojo.Result;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -22,6 +23,14 @@ public interface ParkingService {
      * @throws Exception
      */
     public Result addBatchNonCooperationPark() throws Exception;
+
+    /**
+     * 批量添加未合作停车场信息
+     * @return
+     * @throws Exception
+     */
+    public Result addBatchNonCooperationPark_excel(MultipartFile excelFile) throws Exception;
+
 
     /**
      * 利用经度(longitude)(121)纬度(latitude)(29)查询附近停车场  00：未合作停车场  01：合作停车场

@@ -4,16 +4,12 @@ import com.alibaba.fastjson.JSON;
 import com.weixin.dao.ParkingMapper;
 import com.weixin.pojo.Result;
 import com.weixin.service.ParkingService;
-import com.weixin.util.FileUtils;
-import com.weixin.util.MapUtil;
-import com.weixin.util.ResultUtil;
+import com.weixin.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Administrator on 2018/3/2.
@@ -46,6 +42,24 @@ public class ParkingServiceImpl implements ParkingService{
         return ResultUtil.requestSuccess(count+"条停车场信息批量添加成功");
     }
 
+
+    /**
+     * 批量添加未合作停车场信息
+     * @return
+     */
+    public Result addBatchNonCooperationPark_excel(MultipartFile excelFile) throws Exception{
+        List<String[]> arrList = PoiUtils.readExcel(excelFile);
+        List<Map<String,Object>> mapList = new ArrayList<Map<String,Object>>();
+        for(int i = 0;i<arrList.size();i++){
+            Map<String,Object> temp = new HashMap<String,Object>();
+            temp.put("name",arrList.get(i)[5]);
+            temp.put("address",arrList.get(i)[0]);
+            temp.put("address_loc","POINT("+arrList.get(i)[3]+" "+arrList.get(i)[2]+")");
+            mapList.add(temp);
+        }
+        Integer count = parkingMapper.addBatchNonCooperationPark(mapList);
+        return ResultUtil.requestSuccess(count+"条停车场信息批量添加成功");
+    }
 
     /**
      * 利用经度(longitude)(121)纬度(latitude)(29)查询附近停车场  00：未合作停车场  01：合作停车场
@@ -156,7 +170,37 @@ public class ParkingServiceImpl implements ParkingService{
                     temp.put("name",name.substring(name.indexOf("(")+1,name.lastIndexOf(")")));
                 }
             }
-            map.put("cooperationList",cooperationList);
+            System.out.println("cooperationList size:"+cooperationList.size());
+
+            double latitude = Double.parseDouble(param.get("latitude").toString());   //搜索纬度
+            double longitude = Double.parseDouble(param.get("longitude").toString()); //搜索经度
+            for(int i = 0;i<cooperationList.size();i++){
+                //Map<String,Object> temp = new HashMap<String,Object>();
+                Map<String,Object> temp = cooperationList.get(i);
+                double s_latitude = Double.parseDouble(cooperationList.get(i).get("latitude").toString());
+                double s_longitude = Double.parseDouble(cooperationList.get(i).get("longitude").toString());
+                double distance = LocationUtils.getDistance(latitude,longitude,s_latitude,s_longitude); //计算出搜索距离和每个停车场间的距离
+                temp.put("distance",distance);
+            }
+
+            for(int i=0;i<cooperationList.size();i++){
+                for(int j=0;j<cooperationList.size()-1;j++){
+                    double distance = Double.parseDouble(cooperationList.get(i).get("distance").toString());
+                    double distance2 = Double.parseDouble(cooperationList.get(j).get("distance").toString());
+                    if(distance>distance2){
+                        Map<String,Object>  temp = cooperationList.get(i);
+                        cooperationList.set(i, cooperationList.get(j));
+                        cooperationList.set(j, temp);
+                    }
+                }
+            }
+
+            List<Map<String,Object>> cooperationList2 = new ArrayList<Map<String,Object>>();
+            for(int i = cooperationList.size()-1;i>0;i--){
+                cooperationList2.add(cooperationList.get(i));
+            }
+
+            map.put("cooperationList",cooperationList2);
             map.put("non_cooperationList",non_cooperationList);
             return ResultUtil.requestSuccess(JSON.toJSON(map).toString());
         }else{
@@ -165,6 +209,33 @@ public class ParkingServiceImpl implements ParkingService{
             return ResultUtil.requestSuccess(JSON.toJSON(map).toString());
         }
     }
+
+
+        public static void main(String[] args) {
+            List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+
+            list.add(getData(0));
+            list.add(getData(3));
+            list.add(getData(05));
+            list.add(getData(6));
+            list.add(getData(2));
+
+            System.out.println("排序前" + list);
+
+            Collections.sort(list, new Comparator<Map<String, String>>() {
+                public int compare(Map<String, String> o1, Map<String, String> o2) {
+                    return o1.get("distance").compareTo(o2.get("distance"));
+                }
+            });
+
+            System.out.println("排序后" + list);
+        }
+
+        private static Map<String, String> getData(int num) {
+            Map<String, String> map = new HashMap<String, String>();
+            map.put("countScore", String.valueOf(num));
+            return map;
+        }
 
 
     /**

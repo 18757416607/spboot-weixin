@@ -6,6 +6,8 @@ import com.weixin.util.DateUtils;
 import com.weixin.util.JsonUtil;
 import com.weixin.util.ResultUtil;
 import com.weixin.util.SecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +23,8 @@ import java.util.Map;
 @RequestMapping(value = "/coupon")
 public class CouponController {
 
+    private final Logger logger = LoggerFactory.getLogger(CouponController.class);
+
     @Autowired
     private CouponService couponService;
 
@@ -32,10 +36,11 @@ public class CouponController {
     @PostMapping(value = "/allocationOneCoupon"/*, produces = {"application/json;charset=UTF-8;"}*/)
     public Result randomAllocationOneCoupon(/*@RequestBody*/ String paramStr){
         try{
-            System.out.println("进入领券url");
-            String endDate = "2018-04-12 09:11:34"; //活动到期时间
-            int judge = DateUtils.compare_date(new Date().getTime(),DateUtils.formatStrToDate1("2018-04-11 23:59:59").getTime());
+            logger.info("进入2018年 春游活动领券controller,参数:["+paramStr+"]");
+            String endDate = "2018-04-18 23:59:59"; //活动到期时间
+            int judge = DateUtils.compare_date(new Date().getTime(),DateUtils.formatStrToDate1("2018-04-18 23:59:59").getTime());
             if(judge==1){
+                logger.info("春游领券活动已到期,请关注下个活动!");
                 return ResultUtil.requestSuccess(null,"春游领券活动已到期,请关注下个活动","03");
             }
             Map paramMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));

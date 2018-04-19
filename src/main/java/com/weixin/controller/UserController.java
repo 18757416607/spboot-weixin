@@ -3,6 +3,7 @@ package com.weixin.controller;
 import com.weixin.pojo.User;
 import com.weixin.service.ParkingService;
 import com.weixin.service.UserService;
+import com.weixin.util.MathUtils;
 import com.weixin.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,7 +38,10 @@ public class UserController {
     }
 
     public static void main(String[] args) throws  Exception{
-        System.out.println(SecurityUtils.decrypt("rNNals2i29a0g6zEDn8IIA2f1aA8yqNJbvrmygjLdT/CxWGBHTLyGwNNRIULohLj/7n9Hdkvlsy2Bvh7D+UXgA9zDlKlI2ysI+pASMtdNRLQfT/wVKAeN4/ih2m8NXj2QquvoJIq7L8AQFiWGrMq5iqWxMc60f9xNsUvkzwIQXQ="));
+       // System.out.println(SecurityUtils.decrypt("rNNals2i29a0g6zEDn8IIA2f1aA8yqNJbvrmygjLdT/CxWGBHTLyGwNNRIULohLj/7n9Hdkvlsy2Bvh7D+UXgA9zDlKlI2ysI+pASMtdNRLQfT/wVKAeN4/ih2m8NXj2QquvoJIq7L8AQFiWGrMq5iqWxMc60f9xNsUvkzwIQXQ="));
+        double[] src = new double[] { 29.87477368, 29.8680911819, 29.86209268};
+        double x = 29.866816;
+        System.out.println(MathUtils.getApproximate(x, src));
     }
 
 
