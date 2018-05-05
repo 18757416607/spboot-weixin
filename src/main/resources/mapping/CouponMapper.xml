@@ -2,17 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.weixin.dao.CouponMapper">
 
+
+    <!-- ##################################################   start春游活动   ################################################## -->
     <!-- 查看某个用户是否已经领取过优惠券 -->
     <select id="getIsAllocationCoupon" parameterType="java.util.Map" resultType="java.lang.Integer">
         select COUNT(1) from base_statistics_coupon
         where username = #{username}
     </select>
-    <!--<select id="getIsAllocationCoupon" parameterType="java.util.Map" resultType="java.lang.Integer">-->
-        <!--select COUNT(1) from base_user_coupon-->
-        <!--where username = #{username} and createtime BETWEEN #{startDate} and #{endDate}-->
-    <!--</select>-->
 
-    
     <!-- 活动开始时间和活动结束时间  获取已经分配的优惠券数量 -->
     <select id="getAllocationCountByOwnerAndDate" parameterType="java.util.Map" resultType="java.util.Map">
         SELECT count(1) num,'845' coupon_owner from base_user_coupon
@@ -55,6 +52,62 @@
     <insert id="insertStatisticsCoupon" parameterType="java.util.Map">
         INSERT INTO base_statistics_coupon(username,coupon_amount,createtime) VALUES(#{username},#{coupon_amount},now())
     </insert>
-    
+
+
+    <!-- ##################################################   end春游活动   ################################################## -->
+
+
+
+
+
+    <!-- #################################################  start小程序接口  ################################################# -->
+
+
+    <!-- 根据token查询用户手机号 -->
+    <select id="getWechatUserByToken" parameterType="java.lang.String" resultType="java.lang.String">
+        SELECT username from wechat_user
+        WHERE status = 1 and  token = #{token}
+    </select>
+
+    <!-- 获取优惠券列表 -->
+    <select id="getCouponList" parameterType="java.lang.String" resultType="java.util.Map">
+        SELECT coupon_code,coupon_name,coupon_amount FROM base_user_coupon
+        WHERE status = '00' and username = #{username}
+    </select>
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- #################################################  end小程序接口  ################################################# -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 </mapper>

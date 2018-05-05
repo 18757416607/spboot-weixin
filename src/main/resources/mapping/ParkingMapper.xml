@@ -2,6 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.weixin.dao.ParkingMapper">
 
+
+	<!-- #################################################  start小程序和网页端地图（停车场）接口  ################################################# -->
 	<!-- 验证数据是否有效 -->
 	<select id="checkDataIsValid" resultType="int" parameterType="java.util.Map">
 		SELECT  COUNT(1) FROM  base_user_car WHERE platenum = #{platenum}
@@ -44,5 +46,82 @@
 		SELECT name,AsText(address_loc) as address_loc,parkid,x(address_loc) latitude,y(address_loc) longitude,carnum,'11' mark,charge_rule FROM base_parklist
 		where address_loc is not null
 	</select>
-	
+
+	<!-- #################################################  end小程序和网页端地图（停车场）接口  ################################################# -->
+
+
+
+
+	<!-- #################################################  start小程序接口  ################################################# -->
+	<!-- 获取车辆列表 -->
+	<select id="getCarList" parameterType="java.lang.String" resultType="java.util.Map">
+		SELECT username,platenum,is_open_unionpay,is_default from base_user_car
+		WHERE username = (SELECT username FROM wechat_user WHERE status = 1 and token = #{token}) and status = '00'
+	</select>
+
+	<!-- 我的行程 -->
+	<select id="getRouteList" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT pc.car_platenum,pc.car_status,pc.pay_status,pc.car_parkingid,bp.name FROM (
+		SELECT car_platenum,car_status,pay_status,car_parkingid from park_carrecord
+		WHERE car_platenum in(
+		SELECT platenum from base_user_car
+		<where>
+			<if test="platenum != null and platenum != ''">and platenum = #{platenum}</if>
+			and username = (SELECT username FROM wechat_user WHERE status = 1 and token = #{token}) and status = '00'
+		</where>
+		 )
+		) pc
+		INNER JOIN base_parklist bp on bp.parkid = pc.car_parkingid
+	</select>
+
+	<!-- 添加绑定车辆 -->
+	<insert id="insertc" parameterType="java.util.Map">
+		INSERT INTO base_user_car(username,platenum,status,is_open_unionpay,isactive,is_default,addtime,edittime)
+		VALUES (#{username},#{platenum},'00','0',#{isactive},#{is_default},now(),now())
+	</insert>
+
+	<!-- 根据token查询用户手机号 -->
+	<select id="getWechatUserByToken" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT username from wechat_user
+		WHERE status = 1 and  token = #{token}
+	</select>
+
+	<!-- 查询 某个手机号下是否有车牌存在 -->
+	<select id="getPlateNumCountByUserName" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT count(1) FROM base_user_car
+		WHERE username = #{username} and status = '00'
+	</select>
+
+	<!-- 获取某个手机号下最晚绑定的车牌号顺序 -->
+	<select id="getMaxIsactiveByUserName" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT MAX(isactive) FROM base_user_car
+		WHERE username = #{username} and status = '00'
+	</select>
+
+	<!-- 获取某个手机号下最早绑定的车牌号顺序 -->
+	<select id="getMinIsactiveByUserName" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT MIN(isactive) FROM base_user_car
+		WHERE username = #{username} and status = '00'
+	</select>
+
+	<!-- 修改绑定车辆信息 -->
+	<update id="updateBaseUserCar" parameterType="java.util.Map">
+		UPDATE base_user_car
+		<set>
+			<if test="status != null and status != ''">status = #{status},</if>
+			<if test="isactive != null and isactive != ''">isactive = #{isactive},</if>
+			<if test="is_default != null">is_default = #{is_default},</if>
+			<if test="is_open_unionpay != null">is_open_unionpay = #{is_open_unionpay},</if>
+			<if test="unionpay_bind_id != null and is_default != ''">unionpay_bind_id = #{unionpay_bind_id},</if>
+			<if test="card_type != null and card_type != ''">card_type = #{card_type},</if>
+			<if test="limit_amount != null and limit_amount != ''">limit_amount = #{limit_amount},</if>
+			edittime = now()
+		</set>
+		<where>
+			and username = #{username}
+			<if test="platenum != null and platenum != ''">and platenum = #{platenum}</if>
+		</where>
+	</update>
+
+	<!-- #################################################  end小程序接口  ################################################# -->
 </mapper>

@@ -14,6 +14,8 @@ import java.util.Map;
 @Mapper
 public interface CouponMapper {
 
+    /* #################################################  start春游活动  #################################################*/
+
     /**
      * 查看某个用户是否已经领取过优惠券
      * @param param
@@ -62,5 +64,58 @@ public interface CouponMapper {
      * @return
      */
     public int insertStatisticsCoupon(Map<String,Object> param);
+
+
+    /* #################################################  end春游活动  #################################################*/
+
+
+
+
+
+    /* #################################################  start小程序接口  #################################################*/
+
+
+    /**
+     * 根据token查询用户手机号
+     * @param token
+     * @return
+     */
+    public String getWechatUserByToken(String token);
+
+    /**
+     * 获取优惠券列表
+     * @param username 手机号
+     * @return
+     */
+    public List<Map<String,Object>> getCouponList(String username);
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /* #################################################  end小程序接口  #################################################*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }

@@ -1,13 +1,9 @@
 package com.weixin.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.weixin.pojo.Result;
 import com.weixin.service.AutologonService;
 import com.weixin.util.*;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.tomcat.util.codec.binary.*;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,19 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import javax.servlet.http.HttpServletRequest;
-import java.security.AlgorithmParameters;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.Security;
-import java.security.spec.AlgorithmParameterSpec;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 /**

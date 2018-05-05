@@ -3,12 +3,15 @@ package com.weixin.service;
 import com.weixin.pojo.Result;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 /**
  * Created by Administrator on 2018/3/2.
  */
 public interface ParkingService {
+
+    /* #################################################  start小程序和网页端地图（停车场）接口  #################################################*/
 
     /**
      * 验证数据是否有效
@@ -53,5 +56,71 @@ public interface ParkingService {
      * @return
      */
     public Result findPrakList();
+
+    /* #################################################  end小程序和网页端地图（停车场）接口  #################################################*/
+
+
+
+
+
+    /* #################################################  start小程序接口  #################################################*/
+
+    /**
+     * 获取车辆列表
+     * @param token
+     * @return
+     */
+    public Result getCarList(String token) throws Exception;
+
+    /**
+     * 我的行程
+     * @param param
+     *      token
+     *      platenum 车牌号 为空查询所有
+     * @return
+     */
+    public Result getRouteList(Map<String,Object> param) throws Exception;
+
+    /**
+     * 添加绑定车辆
+     * @param param
+     *      token
+     *      platenum 车牌号
+     * @return
+     */
+    public Result insertBaseUserCar(Map<String,Object> param)throws Exception;
+
+    /**
+     * 删除绑定车辆信息
+     * @param param
+     *      token
+     *      platenum 车牌号
+     * @return
+     * @throws Exception
+     */
+    public Result updateBaseUserCar(Map<String,Object> param) throws Exception;
+
+    /**
+     * 设置默认车辆
+     * @param param
+     *      token
+     *      platenum 车牌号
+     * @return
+     * @throws Exception
+     */
+    public Result settingDefaultCar(Map<String,Object> param) throws Exception;
+
+    /**
+     * 代扣开关
+     * @param param
+     *      token
+     *      platenum 车牌号
+     *      is_open_unionpay 银联代扣开启状态(0为关闭，1为开启)
+     * @return
+     * @throws Exception
+     */
+    public Result withholdSwitch(Map<String,Object> param) throws Exception;
+
+    /* #################################################  end小程序接口  #################################################*/
 
 }

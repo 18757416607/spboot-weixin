@@ -28,6 +28,8 @@ public class CouponController {
     @Autowired
     private CouponService couponService;
 
+    /* #################################################  start春游活动  #################################################*/
+
     /**
      * 2018年 春游活动 随机分配一张优惠券  1元 2元 3元 5元
      * @param paramStr
@@ -52,9 +54,52 @@ public class CouponController {
             return couponService.randomAllocationOneCoupon(paramMap.get("token").toString());
         }catch (Exception e){
             e.printStackTrace();
+            logger.info(e.getMessage());
             return ResultUtil.requestFaild(e.getMessage());
         }
     }
 
+    /* #################################################  end春游活动  #################################################*/
+
+
+
+
+
+
+    /* #################################################  start小程序接口  #################################################*/
+
+    /**
+     * 获取优惠券列表
+     * @param paramStr
+     *      token
+     * @return
+     */
+    @PostMapping(value = "/getCouponList")
+    public Result getCouponList(String paramStr){
+        try{
+            Map paramMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
+            return couponService.getCouponList(paramMap.get("token").toString());
+        }catch (Exception e){
+            e.printStackTrace();
+            logger.info(e.getMessage());
+            return ResultUtil.requestFaild(e.getMessage());
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /* #################################################  end小程序接口  #################################################*/
 
 }

@@ -1,5 +1,6 @@
 package com.weixin.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.weixin.dao.CouponMapper;
 import com.weixin.pojo.Result;
 import com.weixin.service.CouponService;
@@ -23,6 +24,8 @@ public class CouponServiceImpl implements CouponService{
 
     @Autowired
     private CouponMapper couponMapper;
+
+    /* #################################################  start春游活动  #################################################*/
 
     /**
      * 随机分配一张优惠券
@@ -125,5 +128,63 @@ public class CouponServiceImpl implements CouponService{
             return ResultUtil.requestSuccess(null,"优惠券已发送完,感谢您对一咻的支付!","02");
         }
     }
+
+    /* #################################################  end春游活动  #################################################*/
+
+
+
+
+
+
+
+    /* #################################################  start小程序接口  #################################################*/
+
+    /**
+     * 获取优惠券列表
+     * @param token
+     *      token
+     * @return
+     */
+    public Result getCouponList(String token) throws Exception{
+        String username = couponMapper.getUsernameByToken(token);
+        List<Map<String,Object>> couponList = couponMapper.getCouponList(username);
+        return ResultUtil.requestSuccess(JSONObject.toJSONString(couponList));
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /* #################################################  end小程序接口  #################################################*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }

@@ -22,7 +22,9 @@ public class InterceptorConfig extends WebMvcConfigurationSupport {
                 .excludePathPatterns("/autologon/getAliDaYuCheckCode")
                 .excludePathPatterns("/activity/**")
                 .excludePathPatterns("/unionpay/**")
-                .excludePathPatterns("/parking/**");
+                .excludePathPatterns("/parking/findNearbyParkNew")
+                .excludePathPatterns("/parking/findParkList")
+                .excludePathPatterns("/parking/findNearbyPark");
         super.addInterceptors(registry);
     }
 

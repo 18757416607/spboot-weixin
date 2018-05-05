@@ -1,10 +1,13 @@
 package com.weixin.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.weixin.dao.ParkingMapper;
 import com.weixin.pojo.Result;
 import com.weixin.service.ParkingService;
 import com.weixin.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +22,11 @@ public class ParkingServiceImpl implements ParkingService{
 
     @Autowired
     private ParkingMapper parkingMapper;
+
+    private final static Logger logger = LoggerFactory.getLogger(ParkingServiceImpl.class);
+
+
+    /* #################################################  start小程序和网页端地图（停车场）接口  #################################################*/
 
     /**
      * 验证数据是否有效
@@ -49,9 +57,17 @@ public class ParkingServiceImpl implements ParkingService{
      */
     public Result addBatchNonCooperationPark_excel(MultipartFile excelFile) throws Exception{
         List<String[]> arrList = PoiUtils.readExcel(excelFile);
+        for(int i = 0;i<arrList.size();i++){
+            if(arrList.get(i).length==5){
+                System.out.println(arrList.get(i)[0]+","+arrList.get(i)[1]+","+arrList.get(i)[2]+","+arrList.get(i)[3]+","+arrList.get(i)[4]);
+            }
+        }
         List<Map<String,Object>> mapList = new ArrayList<Map<String,Object>>();
         for(int i = 0;i<arrList.size();i++){
             Map<String,Object> temp = new HashMap<String,Object>();
+            if(arrList.get(i).length==4){
+                System.out.println(arrList.get(i));
+            }
             temp.put("name",arrList.get(i)[5]);
             temp.put("address",arrList.get(i)[0]);
             temp.put("address_loc","POINT("+arrList.get(i)[3]+" "+arrList.get(i)[2]+")");
@@ -211,33 +227,6 @@ public class ParkingServiceImpl implements ParkingService{
     }
 
 
-        public static void main(String[] args) {
-            List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-
-            list.add(getData(0));
-            list.add(getData(3));
-            list.add(getData(05));
-            list.add(getData(6));
-            list.add(getData(2));
-
-            System.out.println("排序前" + list);
-
-            Collections.sort(list, new Comparator<Map<String, String>>() {
-                public int compare(Map<String, String> o1, Map<String, String> o2) {
-                    return o1.get("distance").compareTo(o2.get("distance"));
-                }
-            });
-
-            System.out.println("排序后" + list);
-        }
-
-        private static Map<String, String> getData(int num) {
-            Map<String, String> map = new HashMap<String, String>();
-            map.put("countScore", String.valueOf(num));
-            return map;
-        }
-
-
     /**
      * 获取所有的合作停车场列表
      * @return
@@ -269,8 +258,159 @@ public class ParkingServiceImpl implements ParkingService{
             e.printStackTrace();
             return ResultUtil.requestFaild(ResultUtil.REQUESTFAILD);
         }
-
     }
+
+
+    /* #################################################  end小程序和网页端地图（停车场）接口  #################################################*/
+
+
+
+
+    /* #################################################  start小程序接口  #################################################*/
+
+    /**
+     * 获取车辆列表
+     * @param token
+     * @return
+     */
+    public Result getCarList(String token) throws Exception{
+        List<Map<String,Object>> carList = parkingMapper.getCarList(token);
+        return ResultUtil.requestSuccess(JSONObject.toJSONString(carList));
+    }
+
+    /**
+     * 我的行程
+     * @param param
+     *      token
+     *      platenum 车牌号 为空查询所有
+     * @return
+     */
+    public Result getRouteList(Map<String,Object> param) throws Exception{
+        List<Map<String,Object>> carList = parkingMapper.getRouteList(param);
+        return ResultUtil.requestSuccess(JSONObject.toJSONString(carList));
+    }
+
+    /**
+     * 添加绑定车辆
+     * @param param
+     *      token
+     *      platenum 车牌号
+     * @return
+     */
+    public Result insertBaseUserCar(Map<String,Object> param) throws Exception{
+        String username = parkingMapper.getWechatUserByToken(param.get("token").toString());  //根据token查询用户手机号
+        int count = parkingMapper.getPlateNumCountByUserName(username);   //查询 某个手机号下是否有车牌存在
+        int isactive = 100;  //如果是第一次绑定车辆 isactive  初始化为100
+        String is_default = "1";  //是默认车辆
+        if(count>0){
+            is_default = "0";  //不是默认车辆
+            int maxIsactive = parkingMapper.getMaxIsactiveByUserName(username);
+            logger.info("添加绑定车辆-->"+username+"用户不是第一次绑定车辆");
+            maxIsactive = maxIsactive++;
+        }
+        param.put("username",username);
+        param.put("isactive",isactive);
+        param.put("is_default",is_default);
+        logger.info("添加绑定车辆-->准备添加时参数:["+param+"]");
+        int addCount = parkingMapper.insertBaseUserCar(param);
+        if(addCount>0){
+            logger.info("添加绑定车辆-->车辆绑定成功");
+            return ResultUtil.requestSuccess(null,"车辆绑定成功");
+        }else{
+            logger.info("添加绑定车辆-->车辆绑定受影响行数0行");
+            return ResultUtil.requestSuccess(null,"车辆绑定受影响行数0行","01");
+        }
+    }
+
+
+    /**
+     * 删除绑定车辆信息
+     * @param param
+     *      token
+     *      platenum 车牌号
+     * @return
+     * @throws Exception
+     */
+    public Result updateBaseUserCar(Map<String,Object> param) throws Exception{
+        String username = parkingMapper.getWechatUserByToken(param.get("token").toString());  //根据token查询用户手机号
+        param.put("username",username);
+        param.put("status","01");
+        logger.info("删除绑定车辆信息-->准备删除时参数:["+param+"]");
+        int count  = parkingMapper.updateBaseUserCar(param);
+        if(count>0){
+            logger.info("删除绑定车辆信息-->成功解绑["+param.get("platenum")+"]车牌号");
+            return ResultUtil.requestSuccess(null,"成功解绑["+param.get("platenum")+"]车牌号");
+        }else{
+            logger.info("删除绑定车辆信息-->["+param.get("platenum")+"],此车牌号解绑时受影响行数0行");
+            return ResultUtil.requestSuccess(null,"["+param.get("platenum")+"],此车牌号解绑时受影响行数0行","01");
+        }
+    }
+
+
+    /**
+     * 设置默认车辆
+     * @param param
+     *      token
+     *      platenum 车牌号
+     * @return
+     * @throws Exception
+     */
+    public Result settingDefaultCar(Map<String,Object> param) throws Exception{
+        String username = parkingMapper.getWechatUserByToken(param.get("token").toString());  //根据token查询用户手机号
+        int min = parkingMapper.getMinIsactiveByUserName(username); //获取某个手机号下最早绑定的车牌号顺序
+        min = min--;
+        String platenum = param.get("platenum").toString();
+        param.put("platenum",null);
+        param.put("username",username);
+        param.put("is_default","0");
+        logger.info("设置默认车辆-->先把该手机号下的所有车辆都修改为非默认-->准备修改时参数:["+param+"]");
+        int count = parkingMapper.updateBaseUserCar(param); //先把该手机号下的所有车辆都修改为非默认
+        if(count>0){
+            param.put("platenum",platenum);
+            param.put("is_default","1");
+            int count1 = parkingMapper.updateBaseUserCar(param); //设置某个车牌号为默认车辆
+            if(count1>0){
+                return ResultUtil.requestSuccess(null,"["+platenum+"]车牌号,成功设置为默认车辆");
+            }else{
+                logger.info("设置默认车辆--> 设置某个车牌号为默认车辆-->受影响行数0行");
+                return ResultUtil.requestSuccess(null,"设置默认车辆时受影响行数0行","01");
+            }
+        }else{
+            logger.info("设置默认车辆--> 先把该手机号下的所有车辆都修改为非默认-->受影响行数0行");
+            return ResultUtil.requestSuccess(null,"设置默认车辆时受影响行数0行","01");
+        }
+    }
+
+
+    /**
+     * 代扣开关
+     * @param param
+     *      token
+     *      platenum 车牌号
+     *      is_open_unionpay 银联代扣开启状态(0为关闭，1为开启)
+     * @return
+     * @throws Exception
+     */
+    public Result withholdSwitch(Map<String,Object> param) throws Exception{
+        String username = parkingMapper.getWechatUserByToken(param.get("token").toString());  //根据token查询用户手机号
+        param.put("username",username);
+        logger.info("代扣开关-->准备修改时参数:["+param+"]");
+        int count = parkingMapper.updateBaseUserCar(param);
+        String is_open_name = null;
+        if(param.get("is_open_unionpay").equals("0")){ //关闭
+            is_open_name = "关闭";
+        }else{
+            is_open_name = "开启";
+        }
+        if(count>0){
+            return ResultUtil.requestSuccess(null,"["+param.get("platenum")+"]车牌号,"+is_open_name+"代扣成功");
+        }else{
+            return ResultUtil.requestSuccess(null,"["+param.get("platenum")+"]车牌号,"+is_open_name+"代扣时受影响行数0行","01");
+        }
+    }
+
+
+    /* #################################################  end小程序接口  #################################################*/
 
 
 }
