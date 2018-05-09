@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -275,7 +276,20 @@ public class ParkingServiceImpl implements ParkingService{
      */
     public Result getCarList(String token) throws Exception{
         List<Map<String,Object>> carList = parkingMapper.getCarList(token);
-        return ResultUtil.requestSuccess(JSONObject.toJSONString(carList));
+        for(int i = 0;i<carList.size();i++){
+            Map<String,Object> temp = carList.get(i);
+            if(temp.get("card_bank")!=null&&!"".equals(temp.get("card_bank"))){
+                String str = temp.get("card_bank")+"("+temp.get("card_num_last")+")";
+                temp.put("isbind","已绑卡");
+                temp.put("card_num_last",str);
+            }else{
+                temp.put("isbind","未绑卡");
+                temp.put("card_bank","");
+            }
+        }
+        String str = JSON.toJSON(carList).toString();
+        Result result = ResultUtil.requestSuccess(str);
+        return result;
     }
 
     /**
@@ -287,8 +301,24 @@ public class ParkingServiceImpl implements ParkingService{
      */
     public Result getRouteList(Map<String,Object> param) throws Exception{
         List<Map<String,Object>> carList = parkingMapper.getRouteList(param);
+        DecimalFormat df = new DecimalFormat("0");
+        for(int i = 0;i<carList.size();i++){
+            Map<String,Object> temp = carList.get(i);
+            if(temp.get("couponamount")==null||"".equals(temp.get("couponamount"))){
+                temp.put("iscoupon","0");//没有优惠
+            }else{
+                temp.put("iscoupon","1");//优惠了
+            }
+            int duration = Integer.parseInt(temp.get("duration").toString());
+            if(duration<60){
+                temp.put("duration",df.format(duration%60)+"分钟");
+            }else{
+                temp.put("duration",df.format(duration/60)+"小时"+df.format(duration%60)+"分钟");
+            }
+        }
         return ResultUtil.requestSuccess(JSONObject.toJSONString(carList));
     }
+
 
     /**
      * 添加绑定车辆
@@ -315,10 +345,10 @@ public class ParkingServiceImpl implements ParkingService{
         int addCount = parkingMapper.insertBaseUserCar(param);
         if(addCount>0){
             logger.info("添加绑定车辆-->车辆绑定成功");
-            return ResultUtil.requestSuccess(null,"车辆绑定成功");
+            return ResultUtil.requestSuccess("车辆绑定成功","车辆绑定成功");
         }else{
             logger.info("添加绑定车辆-->车辆绑定受影响行数0行");
-            return ResultUtil.requestSuccess(null,"车辆绑定受影响行数0行","01");
+            return ResultUtil.requestSuccess("车辆绑定受影响行数0行","车辆绑定受影响行数0行","01");
         }
     }
 
@@ -339,10 +369,10 @@ public class ParkingServiceImpl implements ParkingService{
         int count  = parkingMapper.updateBaseUserCar(param);
         if(count>0){
             logger.info("删除绑定车辆信息-->成功解绑["+param.get("platenum")+"]车牌号");
-            return ResultUtil.requestSuccess(null,"成功解绑["+param.get("platenum")+"]车牌号");
+            return ResultUtil.requestSuccess("成功解绑["+param.get("platenum")+"]车牌号","成功解绑["+param.get("platenum")+"]车牌号");
         }else{
             logger.info("删除绑定车辆信息-->["+param.get("platenum")+"],此车牌号解绑时受影响行数0行");
-            return ResultUtil.requestSuccess(null,"["+param.get("platenum")+"],此车牌号解绑时受影响行数0行","01");
+            return ResultUtil.requestSuccess("["+param.get("platenum")+"],此车牌号解绑时受影响行数0行","["+param.get("platenum")+"],此车牌号解绑时受影响行数0行","01");
         }
     }
 
@@ -370,14 +400,14 @@ public class ParkingServiceImpl implements ParkingService{
             param.put("is_default","1");
             int count1 = parkingMapper.updateBaseUserCar(param); //设置某个车牌号为默认车辆
             if(count1>0){
-                return ResultUtil.requestSuccess(null,"["+platenum+"]车牌号,成功设置为默认车辆");
+                return ResultUtil.requestSuccess("["+platenum+"]车牌号,成功设置为默认车辆","["+platenum+"]车牌号,成功设置为默认车辆");
             }else{
                 logger.info("设置默认车辆--> 设置某个车牌号为默认车辆-->受影响行数0行");
-                return ResultUtil.requestSuccess(null,"设置默认车辆时受影响行数0行","01");
+                return ResultUtil.requestSuccess("设置默认车辆时受影响行数0行","设置默认车辆时受影响行数0行","01");
             }
         }else{
             logger.info("设置默认车辆--> 先把该手机号下的所有车辆都修改为非默认-->受影响行数0行");
-            return ResultUtil.requestSuccess(null,"设置默认车辆时受影响行数0行","01");
+            return ResultUtil.requestSuccess("设置默认车辆时受影响行数0行","设置默认车辆时受影响行数0行","01");
         }
     }
 
@@ -392,22 +422,44 @@ public class ParkingServiceImpl implements ParkingService{
      * @throws Exception
      */
     public Result withholdSwitch(Map<String,Object> param) throws Exception{
-        String username = parkingMapper.getWechatUserByToken(param.get("token").toString());  //根据token查询用户手机号
-        param.put("username",username);
-        logger.info("代扣开关-->准备修改时参数:["+param+"]");
-        int count = parkingMapper.updateBaseUserCar(param);
-        String is_open_name = null;
-        if(param.get("is_open_unionpay").equals("0")){ //关闭
-            is_open_name = "关闭";
-        }else{
-            is_open_name = "开启";
+        int isbindcard = parkingMapper.getPlateNumIsBindCard(param.get("platenum").toString()); //获取 某个车牌号 是否绑卡
+        if(isbindcard>0){
+            String username = parkingMapper.getWechatUserByToken(param.get("token").toString());  //根据token查询用户手机号
+            param.put("username",username);
+            logger.info("代扣开关-->准备修改时参数:["+param+"]");
+            int count = parkingMapper.updateBaseUserCar(param);
+            String is_open_name = null;
+            if(param.get("is_open_unionpay").equals("0")){ //关闭
+                is_open_name = "关闭";
+            }else{
+                is_open_name = "开启";
+                param.put("limit_amount",200);
+            }
+            if(count>0){
+                return ResultUtil.requestSuccess("["+param.get("platenum")+"]车牌号,"+is_open_name+"代扣成功","["+param.get("platenum")+"]车牌号,"+is_open_name+"代扣成功");
+            }else{
+                return ResultUtil.requestSuccess("["+param.get("platenum")+"]车牌号,"+is_open_name+"代扣时受影响行数0行","["+param.get("platenum")+"]车牌号,"+is_open_name+"代扣时受影响行数0行","01");
+            }
         }
-        if(count>0){
-            return ResultUtil.requestSuccess(null,"["+param.get("platenum")+"]车牌号,"+is_open_name+"代扣成功");
-        }else{
-            return ResultUtil.requestSuccess(null,"["+param.get("platenum")+"]车牌号,"+is_open_name+"代扣时受影响行数0行","01");
-        }
+        return ResultUtil.requestSuccess("["+param.get("platenum")+"]车牌号,未绑卡","["+param.get("platenum")+"]车牌号,未绑卡","01");
     }
+
+    /**
+     * 根据token 获取手机号 咻币  手机号下绑定的车牌号列表
+     * @param param
+     *      {"token":""}
+     * @return
+     */
+    public Result getUserNameAndYiXiMoneyByToken(Map<String,Object> param) throws Exception{
+        logger.info("根据token 获取手机号 咻币 service");
+        Map<String,Object> returnMap = parkingMapper.getUserNameAndYiXiMoneyByToken(param.get("token").toString());
+        logger.info("根据token 获取手机号 咻币  返回数据:"+returnMap);
+        List<String> plateNumList = parkingMapper.getPlateNumList(param.get("token").toString());
+        logger.info("根据token 获取手机号下绑定的车牌号列表  返回数据:"+plateNumList);
+        returnMap.put("plateNumList",plateNumList);
+        return ResultUtil.requestSuccess(JSON.toJSON(returnMap).toString());
+    }
+
 
 
     /* #################################################  end小程序接口  #################################################*/

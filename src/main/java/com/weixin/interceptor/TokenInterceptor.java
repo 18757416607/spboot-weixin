@@ -36,6 +36,9 @@ public class TokenInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o) throws IOException {
         System.out.println("进入拦截器-----------------------------");
         try{
+            System.out.println(httpServletRequest.getParameter("paramStr"));
+            System.out.println(SecurityUtils.decrypt(httpServletRequest.getParameter("paramStr")));
+            httpServletResponse.setHeader("Content-type", "text/html;charset=UTF-8");
             /*-------------------------------------获取json格式数据-------------------------------------*/
             /*StringBuffer sb = new StringBuffer();
             String line = null;

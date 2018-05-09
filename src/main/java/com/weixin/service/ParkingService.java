@@ -121,6 +121,18 @@ public interface ParkingService {
      */
     public Result withholdSwitch(Map<String,Object> param) throws Exception;
 
+
+    /**
+     * 根据token 获取手机号 咻币  手机号下绑定的车牌号列表
+     * @param param
+     *      {"token":""}
+     * @return
+     */
+    public Result getUserNameAndYiXiMoneyByToken(Map<String,Object> param) throws Exception;
+
+
+
+
     /* #################################################  end小程序接口  #################################################*/
 
 }

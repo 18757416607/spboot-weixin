@@ -55,13 +55,22 @@
 	<!-- #################################################  start小程序接口  ################################################# -->
 	<!-- 获取车辆列表 -->
 	<select id="getCarList" parameterType="java.lang.String" resultType="java.util.Map">
-		SELECT username,platenum,is_open_unionpay,is_default from base_user_car
-		WHERE username = (SELECT username FROM wechat_user WHERE status = 1 and token = #{token}) and status = '00'
+		SELECT bua.username,bua.platenum,bua.is_open_unionpay,bua.is_default,bucbu.card_bank,bucbu.card_num_last,cmb.is_open_no_pwd,cmb.is_open cmb_is_open FROM (
+		SELECT username,platenum,is_open_unionpay,is_default,status from base_user_car
+		WHERE username = (SELECT username FROM wechat_user WHERE status = 1 and token = #{token}) and status = '00' ) bua
+		LEFT JOIN (
+		SELECT card_bank,card_num_last,plate_num FROM base_user_car_bind_unionpay
+		where is_bind = 1 and user_name = (SELECT username FROM wechat_user WHERE status = 1 and token = #{token}) ) bucbu
+		on bucbu.plate_num = bua.platenum
+		LEFT JOIN (
+		SELECT is_open_no_pwd,is_open,plate_num FROM base_cmb_user_car_unionpay
+		WHERE is_bind = 1 and  user_name = (SELECT username FROM wechat_user WHERE status = 1 and token = #{token})) cmb
+		on cmb.plate_num = bua.platenum
 	</select>
 
 	<!-- 我的行程 -->
 	<select id="getRouteList" parameterType="java.util.Map" resultType="java.util.Map">
-		SELECT pc.car_platenum,pc.car_status,pc.pay_status,pc.car_parkingid,bp.name FROM (
+		<!-- SELECT pc.car_platenum,pc.car_status,pc.pay_status,pc.car_parkingid,bp.name FROM (
 		SELECT car_platenum,car_status,pay_status,car_parkingid from park_carrecord
 		WHERE car_platenum in(
 		SELECT platenum from base_user_car
@@ -72,10 +81,45 @@
 		 )
 		) pc
 		INNER JOIN base_parklist bp on bp.parkid = pc.car_parkingid
+		ORDER BY pc.create_time DESC
+		LIMIT 50 -->
+		SELECT bpl.platenum,DATE_FORMAT(bpl.starttime,'%Y-%m-%d-%H:%i:%s') starttime,bpl.couponamount,bpl.originalAmount,bp.name,timestampdiff(MINUTE,bpl.starttime,bpl.endtime) duration,
+		case bpl.paytype
+		WHEN 'AutoPay' THEN '自动支付'
+		WHEN 'UnionPay' THEN '银联支付'
+		WHEN 'AliPay' THEN '支付宝支付'
+		WHEN 'WechatPay' THEN '微信支付'
+		WHEN 'CouponPay' THEN '优惠劵支付'
+		WHEN 'UnionAutoPay' THEN '银联代扣支付'
+		WHEN 'RePay' THEN '补缴'
+		WHEN 'PrePay' THEN '预缴费'
+		WHEN 'AliRePay' THEN '支付宝补缴'
+		WHEN 'EquityPlatPay' THEN '权益平台支付'
+		WHEN 'YiXiuWxPay' THEN '一咻微信自助缴费'
+		WHEN 'czPay' THEN '浙商支付'
+		WHEN 'sshPay' THEN '上海银联支付'
+		WHEN 'CmbPay' THEN '招商主动支付'
+		WHEN 'CmbAutoPay' THEN '招商代扣'
+		WHEN 'chinaumsPaySMWxpay-out' THEN '银联商务支付扫码微信'
+		WHEN 'chinaumsPaySMAlipay-out' THEN '银联商务支付支付宝支付'
+		WHEN 'chinaumsPaySMWxpay-in' THEN '银联商务支付扫码微信'
+		WHEN 'chinaumsPaySMAlipay-in' THEN '银联商务支付支付宝支付'
+		WHEN 'UnionpayWallet' THEN '银联钱包支付'
+		WHEN 'WxRepay' THEN '微信公众号补缴'
+		ELSE '未知'
+		END paytype
+		FROM (
+		SELECT platenum,starttime,endTime,parkid,couponamount,originalAmount,paytype  FROM base_parkrecord_list
+		WHERE plateNum =(
+		SELECT platenum from base_user_car WHERE username = (
+		SELECT username FROM wechat_user WHERE status = 1 and token = #{token}) and status = '00' and platenum = #{platenum}
+		) ORDER BY createtime DESC LIMIT 20 ) bpl
+		LEFT JOIN base_parklist bp on bp.parkid = bpl.parkid
+
 	</select>
 
 	<!-- 添加绑定车辆 -->
-	<insert id="insertc" parameterType="java.util.Map">
+	<insert id="insertBaseUserCar" parameterType="java.util.Map">
 		INSERT INTO base_user_car(username,platenum,status,is_open_unionpay,isactive,is_default,addtime,edittime)
 		VALUES (#{username},#{platenum},'00','0',#{isactive},#{is_default},now(),now())
 	</insert>
@@ -104,6 +148,11 @@
 		WHERE username = #{username} and status = '00'
 	</select>
 
+	<!-- 获取 某个车牌号 是否绑卡 -->
+	<select id="getPlateNumIsBindCard" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT COUNT(1) FROM base_user_car_bind_unionpay WHERE plate_num = #{platenum} and is_bind = 1
+	</select>
+
 	<!-- 修改绑定车辆信息 -->
 	<update id="updateBaseUserCar" parameterType="java.util.Map">
 		UPDATE base_user_car
@@ -122,6 +171,18 @@
 			<if test="platenum != null and platenum != ''">and platenum = #{platenum}</if>
 		</where>
 	</update>
+
+	<!-- 根据token 获取手机号 咻币  -->
+	<select id="getUserNameAndYiXiMoneyByToken" parameterType="java.lang.String" resultType="java.util.Map">
+		SELECT username,xiu_money FROM  wechat_user WHERE token = #{token}
+	</select>
+
+	<!-- 根据 token  获取手机号下绑定的车牌号列表 -->
+	<select id="getPlateNumList" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT platenum from base_user_car
+		WHERE username = (SELECT username FROM wechat_user WHERE status = 1 and token = #{token}) and status = '00'
+	</select>
+
 
 	<!-- #################################################  end小程序接口  ################################################# -->
 </mapper>

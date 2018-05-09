@@ -157,7 +157,7 @@ public class ParkingController {
      *          {"token":""}
      * @return
      */
-    @PostMapping(value = "/getCarList")
+    @PostMapping(value = "/getRouteList")
     public Result getRouteList(String paramStr){
         try{
             Map paramMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
@@ -198,7 +198,7 @@ public class ParkingController {
      *          platenum 车牌号
      * @return
      */
-    @PostMapping(value =  "/")
+    @PostMapping(value =  "/insertBaseUserCar")
     public Result insertBaseUserCar(String paramStr){
         try{
             Map paramMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
@@ -229,7 +229,7 @@ public class ParkingController {
             if(paramMap.get("platenum")==null||"".equals(paramMap.get("platenum"))){
                 return ResultUtil.requestSuccess(null,"[车牌号]为空","01");
             }
-            return parkingService.insertBaseUserCar(paramMap);
+            return parkingService.updateBaseUserCar(paramMap);
         }catch (Exception e){
             e.printStackTrace();
             logger.info(e.getMessage());
@@ -288,6 +288,27 @@ public class ParkingController {
             return ResultUtil.requestFaild(e.getMessage());
         }
     }
+
+    /**
+     * 根据token 获取手机号 咻币  手机号下绑定的车牌号列表
+     * @param paramStr
+     *      {"token":""}
+     * @return
+     */
+    @PostMapping(value = "/getUserBaseInfo")
+    public Result getUserBaseInfo(String paramStr){
+        try{
+            Map paramMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
+            logger.info("进入根据token 获取手机号 咻币controller-->参数：["+paramMap+"]");
+            return parkingService.getUserNameAndYiXiMoneyByToken(paramMap);
+        }catch (Exception e){
+            e.printStackTrace();
+            logger.info(e.getMessage());
+            return ResultUtil.requestFaild(e.getMessage());
+        }
+    }
+
+
 
 
     /* #################################################  end小程序接口  #################################################*/

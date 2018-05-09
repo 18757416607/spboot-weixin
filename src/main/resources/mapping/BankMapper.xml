@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weixin.dao.BankMapper">
+
+	<!-- 根据银行卡号前六位 获取  所属银行名称 -->
+	<select id="getCardByBankName" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT card_bank FROM base_card_bin WHERE card_bin like CONCAT('%',#{cardbin},'%')
+	</select>
+
+	<!-- 获取 银行活动 列表 -->
+	<select id="getBankActivitList" parameterType="java.util.Map">
+		SELECT bankName,discountsText,backImg,discountsMoney FROM base_bank_bind_activity
+	</select>
+
+</mapper>

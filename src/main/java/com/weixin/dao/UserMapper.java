@@ -1,10 +1,11 @@
 package com.weixin.dao;
 
-import com.weixin.pojo.User;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
+
 
 /**
  * Created by Administrator on 2018/2/7.
@@ -14,19 +15,18 @@ import java.util.List;
 @Repository
 public interface UserMapper {
 
-    @Select("SELECT * FROM `wqs-test`.tb_user WHERE id = #{id}")
-    User getUserById(Integer id);
+    /**
+     * 获取  我的优惠券个数
+     * @param token
+     * @return
+     */
+    public int getMyCouponCount(String token);
 
-    @Select("SELECT * FROM tb_user")
-    public List<User> getUserList();
-
-    @Insert("insert into tb_user(username, age, ctm) values(#{username}, #{age}, now())")
-    public int add(User user);
-
-    @Update("UPDATE tb_user SET username = #{user.username} , age = #{user.age} WHERE id = #{id}")
-    public int update(@Param("id") Integer id, @Param("user") User user);
-
-    @Delete("DELETE from tb_user where id = #{id} ")
-    public int delete(Integer id);
+    /**
+     * 获取  我的优惠券列表
+     * @param token
+     * @return
+     */
+    public List<Map<String,Object>> getMyCouponList(String token);
 
 }

@@ -106,6 +106,13 @@ public interface ParkingMapper{
     public int getMinIsactiveByUserName(String username);
 
     /**
+     * 获取 某个车牌号 是否绑卡
+     * @param platenum  车牌号
+     * @return
+     */
+    public int getPlateNumIsBindCard(String platenum);
+
+    /**
      * 修改绑定车辆信息
      * @param param
      *      SQL条件：username 手机号   platenum 车牌号
@@ -120,6 +127,20 @@ public interface ParkingMapper{
      * @return
      */
     public int updateBaseUserCar(Map<String,Object> param);
+
+    /**
+     * 根据token 获取手机号 咻币
+     * @param token
+     * @return
+     */
+    public Map<String,Object> getUserNameAndYiXiMoneyByToken(String token);
+
+    /**
+     * 根据 token  获取手机号下绑定的车牌号列表
+     * @param token
+     * @return
+     */
+    public List<String> getPlateNumList(String token);
 
 
     /* #################################################  end小程序接口  #################################################*/
