@@ -136,6 +136,7 @@ public class ParkingController {
      * @param paramStr
      *          {"token":""}
      * @return
+     *      -1:系统报错  00:成功  01:参数为空  02:没有车辆信息
      */
     @PostMapping(value = "/getCarList")
     public Result getCarList(String paramStr){
@@ -154,8 +155,10 @@ public class ParkingController {
     /**
      * 我的行程
      * @param paramStr
-     *          {"token":""}
+     *          {"token":"","platenum":""}
+     *          platenum 车牌号 为空查询所有
      * @return
+     *      -1 : 系统报错 00: 成功 01:参数为空 02:没有行程
      */
     @PostMapping(value = "/getRouteList")
     public Result getRouteList(String paramStr){
@@ -176,12 +179,16 @@ public class ParkingController {
      *          {"token":"","platenum":""}
      *          platenum 车牌号
      * @return
+     *      -1 : 系统报错 00: 成功 01:参数为空 02:没有行程
      */
     @PostMapping(value = "/getOneRoute")
     public Result getOneRoute(String paramStr){
         try{
             Map paramMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
             logger.info("进入获取我的行程(根据车牌号获取停车记录)controller-->参数：["+paramMap+"]");
+            if(paramMap.get("platenum")==null||"".equals(paramMap.get("platenum"))){
+                return ResultUtil.requestSuccess(null,"[车牌号]为空","01");
+            }
             return parkingService.getRouteList(paramMap);
         }catch (Exception e){
             e.printStackTrace();
@@ -222,14 +229,14 @@ public class ParkingController {
      * @return
      */
     @PostMapping(value = "/updateBaseUserCar")
-    public Result updateBaseUserCar(String paramStr){
+    public Result updateBaseUserCar(String paramStr,HttpServletRequest req,HttpServletResponse resp){
         try{
             Map paramMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
             logger.info("进入删除绑定车辆信息controller-->参数：["+paramMap+"]");
             if(paramMap.get("platenum")==null||"".equals(paramMap.get("platenum"))){
                 return ResultUtil.requestSuccess(null,"[车牌号]为空","01");
             }
-            return parkingService.updateBaseUserCar(paramMap);
+            return parkingService.updateBaseUserCar(paramMap,req,resp);
         }catch (Exception e){
             e.printStackTrace();
             logger.info(e.getMessage());

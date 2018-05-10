@@ -71,8 +71,9 @@ public class CouponController {
     /**
      * 获取优惠券列表
      * @param paramStr
-     *      token
+     *      {"token":""}
      * @return
+     *      -1：系统报错   00：成功  01：参数为空  02：没有优惠券信息
      */
     @PostMapping(value = "/getCouponList")
     public Result getCouponList(String paramStr){

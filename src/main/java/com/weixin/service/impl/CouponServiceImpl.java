@@ -142,13 +142,17 @@ public class CouponServiceImpl implements CouponService{
     /**
      * 获取优惠券列表
      * @param token
-     *      token
+     *      {"token":""}
      * @return
+     *      -1：系统报错   00：成功  01：参数为空  02：没有优惠券信息
      */
     public Result getCouponList(String token) throws Exception{
         String username = couponMapper.getUsernameByToken(token);
         List<Map<String,Object>> couponList = couponMapper.getCouponList(username);
-        return ResultUtil.requestSuccess(JSONObject.toJSONString(couponList));
+        if(couponList!=null&&couponList.size()>0){
+            return ResultUtil.requestSuccess(JSONObject.toJSONString(couponList));
+        }
+       return ResultUtil.requestSuccess("没有优惠券信息","没有优惠券信息","02");
     }
 
 

@@ -113,6 +113,13 @@ public interface ParkingMapper{
     public int getPlateNumIsBindCard(String platenum);
 
     /**
+     * 判断某个车牌是否被绑定
+     * @param platenum  车牌号
+     * @return
+     */
+    public int getIsBindCar(String platenum);
+
+    /**
      * 修改绑定车辆信息
      * @param param
      *      SQL条件：username 手机号   platenum 车牌号

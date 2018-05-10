@@ -3,13 +3,61 @@
 <mapper namespace="com.weixin.dao.BankMapper">
 
 	<!-- 根据银行卡号前六位 获取  所属银行名称 -->
-	<select id="getCardByBankName" parameterType="java.lang.String" resultType="java.lang.String">
-		SELECT card_bank FROM base_card_bin WHERE card_bin like CONCAT('%',#{cardbin},'%')
+	<select id="getCardByBankName" parameterType="java.lang.String" resultType="java.util.Map">
+		SELECT card_bank,card_type FROM base_card_bin WHERE card_bin like CONCAT('%',#{cardbin},'%')
 	</select>
 
 	<!-- 获取 银行活动 列表 -->
-	<select id="getBankActivitList" parameterType="java.util.Map">
+	<select id="getBankActivitList" resultType="java.util.Map">
 		SELECT bankName,discountsText,backImg,discountsMoney FROM base_bank_bind_activity
 	</select>
+	
+	<!-- 添加 绑卡信息  新表 -->
+	<insert id="insertBaseUserCarBindUnionPay" parameterType="com.weixin.pojo.BaseUserCarBindUnionpay" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO base_user_car_bind_unionpay(user_name,plate_num,card_bin,card_num_last,card_bank,card_type,is_open,is_bind,create_time,edit_time)
+		VALUES (#{user_name},#{plate_num},#{card_bin},#{card_num_last},#{card_bank},#{card_type},'1','1',now(),now());
+	</insert>
+
+	<!-- 删除 绑卡信息  新表 -->
+	<delete id="deleteBaseUserCarBindUnionPay" parameterType="java.lang.Integer">
+		DELETE FROM base_user_car_bind_unionpay WHERE  id = #{id}
+	</delete>
+
+	<!-- 更新 绑卡 新表信息 -->
+	<update id="updateBaseUserCarBindUnionPay" parameterType="java.util.Map">
+		UPDATE base_user_car_bind_unionpay SET is_bind = 0
+		WHERE plate_num = #{platenum}
+	</update>
+
+	<!-- 添加 绑卡信息  旧表 -->
+	<insert id="insertBaseUserCarUnionPay" parameterType="com.weixin.pojo.BaseUserCarUnionpay">
+		INSERT INTO  base_user_car_unionpay(user_name,plate_num,card_num,real_name,phone_num,card_bank,card_type,is_open,is_bind,create_time,edit_time)
+		VALUES (#{user_name},#{plate_num},#{card_num},#{real_name},#{phone_num},#{card_bank},#{card_type},'1','1',now(),now())
+	</insert>
+
+	<!-- 根据 车牌号 获取 绑卡旧表中的银行卡号   -->
+	<select id="getOldBindTableCardNumByPlateNum" parameterType="java.util.Map" resultType="java.lang.String">
+		SELECT card_num FROM base_user_car_unionpay WHERE plate_num = #{platenum}
+	</select>
+
+	<!-- 更新 绑卡 旧表信息 -->
+	<update id="updateBaseUserCarUnionpay" parameterType="java.util.Map">
+		UPDATE base_user_car_unionpay SET is_bind = 0
+		WHERE plate_num = #{platenum}
+	</update>
+
+	<!-- 判断某个车牌是否被绑定 -->
+	<select id="getIsBindCar" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT count(1) FROM base_user_car WHERE platenum = #{platenum} and status = '00'
+	</select>
+
+	<!-- 添加绑车信息 -->
+	<insert id="insertBaseUserCar" parameterType="java.util.Map">
+		INSERT INTO base_user_car(username,platenum,status,is_open_unionpay,unionpay_bind_id,isactive,card_type,bind_table,limit_amount,is_approve,addtime,edittime)
+		VALUES (#{username},#{platenum},'00',DEFAULT,#{unionpaybindid},100,'CUP','base_user_car_bind_unionpay',DEFAULT,DEFAULT,now(),now())
+	</insert>
+
+	
+
 
 </mapper>

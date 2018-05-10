@@ -2,6 +2,7 @@ package com.weixin.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.weixin.dao.BankMapper;
 import com.weixin.dao.ParkingMapper;
 import com.weixin.pojo.Result;
 import com.weixin.service.ParkingService;
@@ -12,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -266,6 +269,9 @@ public class ParkingServiceImpl implements ParkingService{
 
 
 
+    @Autowired
+    private BankMapper bankMapper;
+
 
     /* #################################################  start小程序接口  #################################################*/
 
@@ -273,15 +279,19 @@ public class ParkingServiceImpl implements ParkingService{
      * 获取车辆列表
      * @param token
      * @return
+     *      -1:系统报错  00:成功  01:参数为空  02:没有车辆信息
      */
     public Result getCarList(String token) throws Exception{
         List<Map<String,Object>> carList = parkingMapper.getCarList(token);
+        if(carList==null||carList.size()==0){
+            return ResultUtil.requestSuccess("没有车辆信息","没有车辆信息","02");
+        }
         for(int i = 0;i<carList.size();i++){
             Map<String,Object> temp = carList.get(i);
             if(temp.get("card_bank")!=null&&!"".equals(temp.get("card_bank"))){
                 String str = temp.get("card_bank")+"("+temp.get("card_num_last")+")";
                 temp.put("isbind","已绑卡");
-                temp.put("card_num_last",str);
+                temp.put("card_bank",str);
             }else{
                 temp.put("isbind","未绑卡");
                 temp.put("card_bank","");
@@ -298,9 +308,13 @@ public class ParkingServiceImpl implements ParkingService{
      *      token
      *      platenum 车牌号 为空查询所有
      * @return
+     *      -1 : 系统报错 00: 成功 01:参数为空 02:没有行程
      */
     public Result getRouteList(Map<String,Object> param) throws Exception{
         List<Map<String,Object>> carList = parkingMapper.getRouteList(param);
+        if(carList==null||carList.size()==0){
+            return ResultUtil.requestSuccess("没有行程","没有行程","02");
+        }
         DecimalFormat df = new DecimalFormat("0");
         for(int i = 0;i<carList.size();i++){
             Map<String,Object> temp = carList.get(i);
@@ -328,6 +342,10 @@ public class ParkingServiceImpl implements ParkingService{
      * @return
      */
     public Result insertBaseUserCar(Map<String,Object> param) throws Exception{
+        int platenumCount = parkingMapper.getIsBindCar(param.get("platenum").toString());
+        if(platenumCount>0){
+            return ResultUtil.requestSuccess("车辆已经被绑定!","车辆已经被绑定!","02");
+        }
         String username = parkingMapper.getWechatUserByToken(param.get("token").toString());  //根据token查询用户手机号
         int count = parkingMapper.getPlateNumCountByUserName(username);   //查询 某个手机号下是否有车牌存在
         int isactive = 100;  //如果是第一次绑定车辆 isactive  初始化为100
@@ -356,23 +374,53 @@ public class ParkingServiceImpl implements ParkingService{
     /**
      * 删除绑定车辆信息
      * @param param
-     *      token
+     *      {"token":"","platenum":""}
      *      platenum 车牌号
      * @return
      * @throws Exception
      */
-    public Result updateBaseUserCar(Map<String,Object> param) throws Exception{
+    public Result updateBaseUserCar(Map<String,Object> param, HttpServletRequest req, HttpServletResponse resp) throws Exception{
         String username = parkingMapper.getWechatUserByToken(param.get("token").toString());  //根据token查询用户手机号
         param.put("username",username);
         param.put("status","01");
         logger.info("删除绑定车辆信息-->准备删除时参数:["+param+"]");
-        int count  = parkingMapper.updateBaseUserCar(param);
-        if(count>0){
-            logger.info("删除绑定车辆信息-->成功解绑["+param.get("platenum")+"]车牌号");
-            return ResultUtil.requestSuccess("成功解绑["+param.get("platenum")+"]车牌号","成功解绑["+param.get("platenum")+"]车牌号");
+
+        //解绑银行卡
+        boolean flag = true; //标志是否有银行卡存在
+        String cardNum = bankMapper.getOldBindTableCardNumByPlateNum(param); //根据 车牌号 获取 绑卡旧表中的银行卡号
+        if(cardNum!=null&&"".equals(cardNum)){
+            UnBindCardUtil unBindCardUtil = new UnBindCardUtil();
+            Result result = unBindCardUtil.requestUnBindCard(req,resp,cardNum);
+            if(result.getCode().equals("00")){
+                int newCount = bankMapper.updateBaseUserCarBindUnionPay(param);  //更新 绑卡 新表信息
+                if(newCount>0){
+                    int oldCount = bankMapper.updateBaseUserCarUnionpay(param);      //更新 绑卡 旧表信息
+                    if(oldCount>0){
+                        logger.info("小程序解绑银行卡service-->解绑银行卡成功");
+                    }else{
+                        logger.info("小程序解绑银行卡service-->更新绑卡旧表受影响行数0行");
+                        flag = false;
+                    }
+                }else{
+                    logger.info("小程序解绑银行卡service-->更新绑卡新表受影响行数0行");
+                    flag = false;
+                }
+            }else{
+                flag = false;
+            }
+        }
+
+        if(flag){
+            int count  = parkingMapper.updateBaseUserCar(param);
+            if(count>0){
+                logger.info("删除绑定车辆信息-->成功解绑["+param.get("platenum")+"]车牌号");
+                return ResultUtil.requestSuccess("成功解绑["+param.get("platenum")+"]车牌号","成功解绑["+param.get("platenum")+"]车牌号");
+            }else{
+                logger.info("删除绑定车辆信息-->["+param.get("platenum")+"],此车牌号解绑时受影响行数0行");
+                return ResultUtil.requestSuccess("["+param.get("platenum")+"],此车牌号解绑时受影响行数0行","["+param.get("platenum")+"],此车牌号解绑时受影响行数0行","02");
+            }
         }else{
-            logger.info("删除绑定车辆信息-->["+param.get("platenum")+"],此车牌号解绑时受影响行数0行");
-            return ResultUtil.requestSuccess("["+param.get("platenum")+"],此车牌号解绑时受影响行数0行","["+param.get("platenum")+"],此车牌号解绑时受影响行数0行","01");
+            return ResultUtil.requestSuccess("删除车辆时解绑银行卡失败","删除车辆时解绑银行卡失败","03");
         }
     }
 

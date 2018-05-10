@@ -153,6 +153,11 @@
 		SELECT COUNT(1) FROM base_user_car_bind_unionpay WHERE plate_num = #{platenum} and is_bind = 1
 	</select>
 
+	<!-- 判断某个车牌是否被绑定 -->
+	<select id="getIsBindCar" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT count(1) FROM base_user_car WHERE platenum = #{platenum} and status = '00'
+	</select>
+
 	<!-- 修改绑定车辆信息 -->
 	<update id="updateBaseUserCar" parameterType="java.util.Map">
 		UPDATE base_user_car

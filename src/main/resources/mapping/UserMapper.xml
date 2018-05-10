@@ -10,8 +10,8 @@
 
 	<!-- 获取  我的优惠券列表 -->
 	<select id="getMyCouponList" parameterType="java.lang.String" resultType="java.util.Map">
-		SELECT buc.coupon_name,buc.coupon_amount,buc.deadline,bp.name,count(coupon_name) couponcount FROM (
-		SELECT coupon_name,coupon_amount,deadline,coupon_park FROM base_user_coupon
+		SELECT buc.coupon_name,buc.coupon_amount,buc.deadline,bp.name,buc.createtime,count(buc.coupon_name) couponcount FROM (
+SELECT coupon_name,coupon_amount,deadline,coupon_park,createtime FROM base_user_coupon
 		WHERE username = (
 		SELECT username FROM wechat_user WHERE status = 1 and token = #{token}) and status = '00' and deadline >= now() ) buc
 		LEFT JOIN base_parklist bp on bp.parkid = buc.coupon_park

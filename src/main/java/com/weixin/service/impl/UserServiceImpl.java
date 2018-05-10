@@ -5,6 +5,8 @@ import com.weixin.dao.UserMapper;
 import com.weixin.pojo.Result;
 import com.weixin.pojo.User;
 import com.weixin.service.UserService;
+import com.weixin.smallRoutinePay.util.DateUtil;
+import com.weixin.util.DateUtils;
 import com.weixin.util.ResultUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +51,15 @@ public class UserServiceImpl implements UserService {
     public Result getMyCouponList(Map<String,Object> param) throws Exception{
         logger.info("获取  我的优惠券列表 service");
         List<Map<String,Object>> couponList = userMapper.getMyCouponList(param.get("token").toString());
+        for(int i = 0;i<couponList.size();i++){
+            Map<String,Object> temp = couponList.get(i);
+            long day = DateUtils.getTodayIntevalDays(temp.get("createtime").toString());
+            if(day<=7){
+                temp.put("new_coupon","0");  //新优惠券
+            }else{
+                temp.put("new_coupon","1");  //旧优惠券
+            }
+        }
         logger.info("获取  我的优惠券列表 --> token:["+param.get("token")+"]下的优惠券列表:"+couponList);
         return ResultUtil.requestSuccess(JSON.toJSON(couponList).toString());
     }

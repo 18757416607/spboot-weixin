@@ -3,6 +3,8 @@ package com.weixin.service;
 import com.weixin.pojo.Result;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -98,7 +100,7 @@ public interface ParkingService {
      * @return
      * @throws Exception
      */
-    public Result updateBaseUserCar(Map<String,Object> param) throws Exception;
+    public Result updateBaseUserCar(Map<String,Object> param, HttpServletRequest req, HttpServletResponse resp) throws Exception;
 
     /**
      * 设置默认车辆

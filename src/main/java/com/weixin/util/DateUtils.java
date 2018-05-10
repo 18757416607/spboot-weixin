@@ -764,7 +764,8 @@ public class DateUtils {
 
 	public static void main(String[] args) {
 		try {
-			System.out.println(compare_date(new Date().getTime(),formatStrToDate1("2018-04-03 11:42:49").getTime()));
+
+			System.out.println(getTodayIntevalDays("2018-05-06 12:00:00"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
