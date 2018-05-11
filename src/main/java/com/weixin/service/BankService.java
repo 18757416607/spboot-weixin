@@ -64,4 +64,18 @@ public interface BankService {
     public Result UnBindBankCard(Map<String,Object> param, HttpServletRequest req, HttpServletResponse resp) throws Exception;
 
 
+    /**
+     * 切换绑定银行卡
+     * @param param
+     *      {"token":"","platenum":"","cardnum":"","name":"","username":"","checkcode":""}
+     *      platenum : 车牌号
+     *      cardnum : 银行卡号
+     *      name : 姓名
+     *      username : 手机号
+     *      checkcode : 手机验证码
+     * @return
+     * @throws Exception
+     */
+    public Result changeBindCard(Map<String,Object> param, HttpServletRequest req, HttpServletResponse resp) throws Exception;
+
 }

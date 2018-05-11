@@ -390,7 +390,13 @@ public class ParkingServiceImpl implements ParkingService{
         String cardNum = bankMapper.getOldBindTableCardNumByPlateNum(param); //根据 车牌号 获取 绑卡旧表中的银行卡号
         if(cardNum!=null&&"".equals(cardNum)){
             UnBindCardUtil unBindCardUtil = new UnBindCardUtil();
-            Result result = unBindCardUtil.requestUnBindCard(req,resp,cardNum);
+
+            Map<String,Object> unionpayMap = new HashMap<String,Object>();
+            String bindId = bankMapper.getNewBindTableCardNumByPlateNum(param.get("platenum").toString()); //解绑银行卡时 需要获取绑卡时上送的bindId
+            unionpayMap.put("cardNum",cardNum);
+            unionpayMap.put("bindId",bindId);
+
+            Result result = unBindCardUtil.requestUnBindCard(req,resp,unionpayMap);
             if(result.getCode().equals("00")){
                 int newCount = bankMapper.updateBaseUserCarBindUnionPay(param);  //更新 绑卡 新表信息
                 if(newCount>0){

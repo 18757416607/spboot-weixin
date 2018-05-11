@@ -1,3 +1,4 @@
+/*
 package com.weixin.filter;
 
 import org.springframework.context.annotation.Bean;
@@ -10,9 +11,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import java.nio.charset.Charset;
 import java.util.List;
 
+*/
 /**
  * Created by Administrator on 2018/3/9.
- */
+ *//*
+
 @Configuration
 class CustomMVCConfiguration extends WebMvcConfigurerAdapter {
 
@@ -37,3 +40,4 @@ class CustomMVCConfiguration extends WebMvcConfigurerAdapter {
         configurer.favorPathExtension(false);
     }
 }
+*/

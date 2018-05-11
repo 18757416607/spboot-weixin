@@ -18,17 +18,19 @@ import java.util.Map;
 public class UnBindCardUtil {
 
     /**
-     * 请求银联绑定卡片接口
+     * 请求银联解绑卡片接口
      * @param req
      * @param resp
-     * @param cardNum  银行卡号
+     * @param param
+     *      cardNum  银行卡号
+     *      bindId   绑定银行卡时上送的
      * @return
      * @throws Exception
      */
-    public Result requestUnBindCard(HttpServletRequest req, HttpServletResponse resp,String cardNum) throws Exception{
+    public Result requestUnBindCard(HttpServletRequest req, HttpServletResponse resp,Map<String,Object> param) throws Exception{
         SDKConfig.getConfig().loadPropertiesFromSrc(); //从classpath加载acp_sdk.properties文件
         /**对请求参数进行签名并发送http post请求，接收同步应答报文**/
-        Map<String, String> reqData = AcpService.sign(setFormDate(cardNum),DemoBase.encoding);			//报文中certId,signature的值是在signData方法中获取并自动赋值的，只要证书配置正确即可。
+        Map<String, String> reqData = AcpService.sign(setFormDate(param),DemoBase.encoding);			//报文中certId,signature的值是在signData方法中获取并自动赋值的，只要证书配置正确即可。
         String requestBackUrl = SDKConfig.getConfig().getBackRequestUrl();   			//交易请求url从配置文件读取对应属性文件acp_sdk.properties中的 acpsdk.backTransUrl
         Map<String, String> rspData = AcpService.post(reqData,requestBackUrl,DemoBase.encoding); //发送请求报文并接受同步应答（默认连接超时时间30秒，读取返回结果超时时间30秒）;这里调用signData之后，调用submitUrl之前不能对submitFromData中的键值对做任何修改，如果修改会导致验签不通过
 
@@ -65,7 +67,7 @@ public class UnBindCardUtil {
      * 设置请求参数
      * @return 请求参数MAP
      */
-    private static Map<String, String> setFormDate(String cardNum) {
+    private static Map<String, String> setFormDate(Map<String,Object> param) {
 
         Map<String, String> contentData = new HashMap<String, String>();
 
@@ -74,7 +76,7 @@ public class UnBindCardUtil {
         contentData.put("encoding", DemoBase.encoding);                //字符集编码 可以使用UTF-8,GBK两种方式
         contentData.put("signMethod", SDKConfig.getConfig().getSignMethod());                           //签名方法 目前只支持01-RSA方式证书加密
         contentData.put("txnType", "74");                              //交易类型 11-代收
-        contentData.put("txnSubType", "04");                           //交易子类型  01-实名认证
+        contentData.put("txnSubType", "00");                           //交易子类型  01-实名认证
         contentData.put("bizType", "000501");                          //业务类型 代收产品
         contentData.put("channelType", "07");                          //渠道类型07-PC
 
@@ -84,14 +86,16 @@ public class UnBindCardUtil {
         contentData.put("orderId", DemoBase.getOrderId());             //商户订单号，8-40位数字字母，不能含“-”或“_”，可以自行定制规则
         contentData.put("txnTime", DemoBase.getCurrentTime());         //订单发送时间，格式为YYYYMMDDhhmmss，必须取当前时间，否则会报txnTime无效
 
+        contentData.put("bindId", param.get("bindId").toString());     //【本交易中bindId必送】可以自行定义 1-128位字母、数字和/或特殊符号字符,代收使用Form09_6_2_DaiShou_BindId.java
+
         //如果商户号开通了【商户对敏感信息加密】的权限那么需要对 accNo，pin和phoneNo，
         //cvn2，expired加密（如果这些上送的话），对敏感信息加密使用：
-        String accNoEnc = AcpService.encryptData(cardNum, "UTF-8");  	   //这里测试的时候使用的是测试卡号，正式环境请使用真实卡号
+        String accNoEnc = AcpService.encryptData(param.get("cardNum").toString(), "UTF-8");  	   //这里测试的时候使用的是测试卡号，正式环境请使用真实卡号
         contentData.put("accNo", accNoEnc);
         contentData.put("encryptCertId",AcpService.getEncryptCertId());//加密证书的certId，配置在acp_sdk.properties文件 acpsdk.encryptCert.path属性下
 
         //如果商户号未开通【商户对敏感信息加密】权限那么不需对敏感信息加密使用：
-        contentData.put("accNo",cardNum);            				   //这里测试的时候使用的是测试卡号，正式环境请使用真实卡号
+        contentData.put("accNo",param.get("cardNum").toString());            				   //这里测试的时候使用的是测试卡号，正式环境请使用真实卡号
         return contentData;
     }
 

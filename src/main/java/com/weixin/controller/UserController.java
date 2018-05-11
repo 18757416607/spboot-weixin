@@ -18,6 +18,7 @@ import java.util.Map;
 /**
  * Created by Administrator on 2018/2/7.
  */
+
 @RestController
 @RequestMapping(value = "/user")
 public class UserController {

@@ -37,6 +37,13 @@ public interface BankMapper {
     public int insertBaseUserCarBindUnionPay(BaseUserCarBindUnionpay baseUserCarBindUnionpay);
 
     /**
+     * 解绑银行卡时 需要获取绑卡时上送的bindId
+     * @param platenum  车牌号
+     * @return
+     */
+    public String getNewBindTableCardNumByPlateNum(String platenum);
+
+    /**
      * 删除 绑卡信息  新表
      * @param id 主键id
      * @return
@@ -91,5 +98,14 @@ public interface BankMapper {
      * @return
      */
     public int insertBaseUserCar(Map<String,Object> param);
+
+    /**
+     * 绑卡成功后  修改银联代扣开关为开启   unionpay_bind_id 里插入绑卡新表的id
+     * @param param
+     *      unionpay_bind_id : 银联绑定id，对应base_user_car_unionpay中的id
+     *      platenum : 车牌号
+     * @return
+     */
+    public int updateBaseUserCar(Map<String,Object> param);
 
 }

@@ -18,6 +18,11 @@
 		VALUES (#{user_name},#{plate_num},#{card_bin},#{card_num_last},#{card_bank},#{card_type},'1','1',now(),now());
 	</insert>
 
+	<!-- 解绑银行卡时 需要获取绑卡时上送的bindId -->
+	<select id="getNewBindTableCardNumByPlateNum" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT id FROM base_user_car_bind_unionpay WHERE plate_num = #{platenum} and  is_bind = 1
+	</select>
+
 	<!-- 删除 绑卡信息  新表 -->
 	<delete id="deleteBaseUserCarBindUnionPay" parameterType="java.lang.Integer">
 		DELETE FROM base_user_car_bind_unionpay WHERE  id = #{id}
@@ -37,7 +42,7 @@
 
 	<!-- 根据 车牌号 获取 绑卡旧表中的银行卡号   -->
 	<select id="getOldBindTableCardNumByPlateNum" parameterType="java.util.Map" resultType="java.lang.String">
-		SELECT card_num FROM base_user_car_unionpay WHERE plate_num = #{platenum}
+		SELECT card_num FROM base_user_car_unionpay WHERE plate_num = #{platenum} and  is_bind = 1
 	</select>
 
 	<!-- 更新 绑卡 旧表信息 -->
@@ -57,6 +62,10 @@
 		VALUES (#{username},#{platenum},'00',DEFAULT,#{unionpaybindid},100,'CUP','base_user_car_bind_unionpay',DEFAULT,DEFAULT,now(),now())
 	</insert>
 
+	<!-- 绑卡成功后  修改银联代扣开关为开启   unionpay_bind_id 里插入绑卡新表的id -->
+	<update id="updateBaseUserCar" parameterType="java.util.Map">
+		UPDATE base_user_car SET  is_open_unionpay = 1,unionpay_bind_id = #{unionpay_bind_id} WHERE platenum = #{platenum}
+	</update>
 	
 
 
