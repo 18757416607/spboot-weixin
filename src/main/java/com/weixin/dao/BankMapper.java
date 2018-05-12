@@ -108,4 +108,11 @@ public interface BankMapper {
      */
     public int updateBaseUserCar(Map<String,Object> param);
 
+    /**
+     * 根据token 获取用户手机号
+     * @param token
+     * @return
+     */
+    public String getUSerNameByToken(String token);
+
 }

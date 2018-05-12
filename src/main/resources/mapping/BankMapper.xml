@@ -64,9 +64,12 @@
 
 	<!-- 绑卡成功后  修改银联代扣开关为开启   unionpay_bind_id 里插入绑卡新表的id -->
 	<update id="updateBaseUserCar" parameterType="java.util.Map">
-		UPDATE base_user_car SET  is_open_unionpay = 1,unionpay_bind_id = #{unionpay_bind_id} WHERE platenum = #{platenum}
+		UPDATE base_user_car SET  is_open_unionpay = '01',unionpay_bind_id = #{unionpay_bind_id} WHERE platenum = #{platenum}
 	</update>
-	
 
+	<!-- 根据token 获取用户手机号 -->
+	<select id="getUSerNameByToken" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT username FROM wechat_user WHERE token = #{token} and status = 1
+	</select>
 
 </mapper>

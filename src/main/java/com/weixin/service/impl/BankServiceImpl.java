@@ -163,10 +163,9 @@ public class BankServiceImpl implements BankService{
         String bindId = bankMapper.getNewBindTableCardNumByPlateNum(param.get("platenum").toString());  // 解绑银行卡时 需要获取绑卡时上送的bindId
         if(bindId!=null&&!"".equals(bindId)){
             Map<String,Object> oldBindTable = bankMapper.getOldBindTableCardNumByPlateNum(param); //根据 车牌号 获取 绑卡旧表中的银行卡号
-
-            param.put("username",oldBindTable.get("user_name"));
-            param.put("name",oldBindTable.get("real_name"));
             if(oldBindTable!=null){
+                //param.put("username",oldBindTable.get("user_name"));
+                //param.put("name",oldBindTable.get("real_name"));
                 if(oldBindTable.get("card_num").equals(param.get("cardnum").toString())){
                     return ResultUtil.requestSuccess("该卡号已经绑定,无需换绑","该卡号已经绑定,无需换绑","06");
                 }
@@ -205,12 +204,13 @@ public class BankServiceImpl implements BankService{
         String cardnumlast = param.get("cardnum").toString().substring(param.get("cardnum").toString().length()-4,param.get("cardnum").toString().length());
         param.put("id","");
         Map<String,Object> bankInfo = bankMapper.getCardByBankName(cardBin); //根据银行卡号前六位 获取  所属银行名称
+        String phoneNum = bankMapper.getUSerNameByToken(param.get("token").toString());  //根据token 获取用户手机号
         //添加 绑卡信息  新表
         BaseUserCarBindUnionpay baseUserCarBindUnionpay = new BaseUserCarBindUnionpay();
         baseUserCarBindUnionpay.setPlate_num(param.get("platenum").toString());
         baseUserCarBindUnionpay.setCard_bin(cardBin);
         baseUserCarBindUnionpay.setCard_num_last(cardnumlast);
-        baseUserCarBindUnionpay.setUser_name(param.get("username").toString());
+        baseUserCarBindUnionpay.setUser_name(phoneNum);
         baseUserCarBindUnionpay.setCard_bank(bankInfo.get("card_bank").toString());
         baseUserCarBindUnionpay.setCard_type(bankInfo.get("card_type").toString());
         int count = bankMapper.insertBaseUserCarBindUnionPay(baseUserCarBindUnionpay);
@@ -224,7 +224,7 @@ public class BankServiceImpl implements BankService{
             if(result.getCode().equals("00")){
                 //添加 绑卡信息  旧表
                 BaseUserCarUnionpay baseUserCarUnionpay = new BaseUserCarUnionpay();
-                baseUserCarUnionpay.setUser_name(param.get("username").toString());
+                baseUserCarUnionpay.setUser_name(phoneNum);
                 baseUserCarUnionpay.setPlate_num(param.get("platenum").toString());
                 baseUserCarUnionpay.setCard_num(param.get("cardnum").toString());
                 baseUserCarUnionpay.setReal_name(param.get("name").toString());
