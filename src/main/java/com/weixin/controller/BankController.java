@@ -8,10 +8,8 @@ import com.weixin.util.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,6 +27,8 @@ public class BankController {
 
     @Autowired
     private BankService bankService;
+
+
 
     /**
      * 根据银行卡号 获取  所属银行名称
@@ -117,20 +117,22 @@ public class BankController {
      *      cardnum : 银行卡号
      *      username : 手机号
      * @return
-     *      -1：系统报错   00：成功  01：参数为空  02：表更新不成功   03：验证码失效,请重新获取验证码!  04:验证码错误!   05:银联返回的消息  06:车辆已有绑定银行卡
+     *      -1：系统报错   00：成功  01：参数为空  02：表更新不成功   03：验证码失效,请重新获取验证码!  04:验证码错误!   05:银联返回的消息 06:换绑时银行卡号一样
+     * 说明：
+     *    若该车牌号已有绑定银行卡就是先解绑 在 绑定
      * @throws Exception
      */
     @PostMapping(value = "/bindBankCard")
     public Result bindBankCard(String paramStr,String P1,String P2, HttpServletRequest req, HttpServletResponse resp){
         try{
 
-            Map<String,Object> tokenMap = JsonUtil.jsonToMap(/*SecurityUtils.decrypt(paramStr)*/paramStr);
-            Map<String,Object> p1 = JsonUtil.jsonToMap(/*SecurityUtils.decrypt(P1)*/P1);
-            Map<String,Object> p2 = JsonUtil.jsonToMap(/*SecurityUtils.decrypt(P2)*/P2);
+            /*Map<String,Object> tokenMap = JsonUtil.jsonToMap(paramStr);
+            Map<String,Object> p1 = JsonUtil.jsonToMap(P1);
+            Map<String,Object> p2 = JsonUtil.jsonToMap(P2);*/
 
-            /*Map<String,Object> tokenMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
+            Map<String,Object> tokenMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
             Map<String,Object> p1 = JsonUtil.jsonToMap(SecurityUtils.decrypt(P1));
-            Map<String,Object> p2 = JsonUtil.jsonToMap(SecurityUtils.decrypt(P2));*/
+            Map<String,Object> p2 = JsonUtil.jsonToMap(SecurityUtils.decrypt(P2));
 
             Map<String,Object> paramMap = new HashMap<String,Object>();
             paramMap.put("token",tokenMap.get("token"));
@@ -164,98 +166,6 @@ public class BankController {
             return bankService.bindBankCard(paramMap,req,resp);
         }catch (Exception e){
             logger.info("绑定银行卡controller-->"+e.getMessage());
-            e.printStackTrace();
-            return ResultUtil.requestFaild(e.getMessage());
-        }
-    }
-
-    /**
-     * 解绑银行卡
-     * @param paramStr
-     *      {"token":"","platenum":""}
-     *      platenum : 车牌号
-     * @param req
-     * @param resp
-     * @return
-     *      -1：系统报错   00：成功  01：参数为空  02：表更新不成功 03:车牌号对应的银行卡号不存在
-     */
-    @PostMapping(value = "/unBindBankCard")
-    public Result unBindBankCard(String paramStr, HttpServletRequest req, HttpServletResponse resp){
-        try{
-            Map paramMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
-            logger.info("进入解绑银行卡controller-->参数:["+paramMap+"]");
-            if(paramMap.get("platenum")==null||"".equals(paramMap.get("platenum"))){
-                logger.info("解绑银行卡-->[车牌号]为空");
-                return ResultUtil.requestSuccess("[车牌号]为空","[车牌号]为空","01");
-            }
-            return bankService.UnBindBankCard(paramMap,req,resp);
-        }catch (Exception e){
-            logger.info("解绑银行卡controller-->"+e.getMessage());
-            e.printStackTrace();
-            return ResultUtil.requestFaild(e.getMessage());
-        }
-    }
-
-
-    /**
-     * 切换绑定银行卡
-     * @param paramStr
-     *      {"token":""}
-     * @param P1
-     *      {"name":"","checkcode":""}
-     *      name : 姓名
-     *      checkcode : 验证码
-     * @param P2
-     *      {"platenum":"","cardnum":"","username":""}
-     *      platenum : 车牌号
-     *      cardnum : 银行卡号
-     *      username : 手机号
-     * @return
-     *      -1：系统报错   00：成功  01：参数为空  02：表更新不成功   03：验证码失效,请重新获取验证码!  04:验证码错误!   05:银联返回的消息
-     * @throws Exception
-     */
-    @PostMapping(value = "/changeBindCard")
-    public Result changeBindCard(String paramStr,String P1,String P2, HttpServletRequest req, HttpServletResponse resp){
-        try{
-            /*Map<String,Object> tokenMap = JsonUtil.jsonToMap(*//*SecurityUtils.decrypt(paramStr)*//*paramStr);
-            Map<String,Object> p1 = JsonUtil.jsonToMap(*//*SecurityUtils.decrypt(P1)*//*P1);
-            Map<String,Object> p2 = JsonUtil.jsonToMap(*//*SecurityUtils.decrypt(P2)*//*P2);*/
-            Map<String,Object> tokenMap = JsonUtil.jsonToMap(SecurityUtils.decrypt(paramStr));
-            Map<String,Object> p1 = JsonUtil.jsonToMap(SecurityUtils.decrypt(P1));
-            Map<String,Object> p2 = JsonUtil.jsonToMap(SecurityUtils.decrypt(P2));
-
-            Map<String,Object> paramMap = new HashMap<String,Object>();
-            paramMap.put("token",tokenMap.get("token"));
-            paramMap.put("name",p1.get("name"));
-            paramMap.put("checkcode",p1.get("checkcode"));
-            paramMap.put("username",p2.get("username"));
-            paramMap.put("platenum",p2.get("platenum"));
-            paramMap.put("cardnum",p2.get("cardnum"));
-
-            logger.info("进入切换绑定银行卡controller-->参数:["+paramMap+"]");
-            if(paramMap.get("platenum")==null||"".equals(paramMap.get("platenum"))){
-                logger.info("切换绑定银行卡-->[车牌号]为空");
-                return ResultUtil.requestSuccess("[车牌号]为空","[车牌号]为空","01");
-            }
-            if(paramMap.get("cardnum")==null||"".equals(paramMap.get("cardnum"))){
-                logger.info("切换绑定银行卡-->[卡号]为空");
-                return ResultUtil.requestSuccess("[卡号]为空","[卡号]为空","01");
-            }
-            if(paramMap.get("name")==null||"".equals(paramMap.get("name"))){
-                logger.info("切换绑定银行卡-->[姓名]为空");
-                return ResultUtil.requestSuccess("[姓名]为空","[姓名]为空","01");
-            }
-            if(paramMap.get("username")==null||"".equals(paramMap.get("username"))){
-                logger.info("切换绑定银行卡-->[手机号]为空");
-                return ResultUtil.requestSuccess("[手机号]为空","[手机号]为空","01");
-            }
-            if(paramMap.get("checkcode")==null||"".equals(paramMap.get("checkcode"))){
-                logger.info("切换绑定银行卡-->[验证码]为空");
-                return ResultUtil.requestSuccess("[验证码]为空","[验证码]为空","01");
-            }
-            return bankService.changeBindCard(paramMap,req,resp);
-        }catch (Exception e){
-            logger.info("切换绑定银行卡controller-->"+e.getMessage());
             e.printStackTrace();
             return ResultUtil.requestFaild(e.getMessage());
         }

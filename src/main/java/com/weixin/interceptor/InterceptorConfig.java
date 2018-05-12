@@ -24,7 +24,7 @@ public class InterceptorConfig extends WebMvcConfigurationSupport {
                 .excludePathPatterns("/unionpay/**")
                 .excludePathPatterns("/parking/findNearbyParkNew")
                 .excludePathPatterns("/parking/findParkList")
-                .excludePathPatterns("/bank/bindBankCard")
+                //.excludePathPatterns("/bank/bindBankCard")
                 .excludePathPatterns("/parking/findNearbyPark");
         super.addInterceptors(registry);
     }

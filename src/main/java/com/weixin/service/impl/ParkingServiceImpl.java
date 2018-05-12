@@ -387,13 +387,13 @@ public class ParkingServiceImpl implements ParkingService{
 
         //解绑银行卡
         boolean flag = true; //标志是否有银行卡存在
-        String cardNum = bankMapper.getOldBindTableCardNumByPlateNum(param); //根据 车牌号 获取 绑卡旧表中的银行卡号
-        if(cardNum!=null&&"".equals(cardNum)){
+        Map<String,Object> oldBindTable = bankMapper.getOldBindTableCardNumByPlateNum(param); //根据 车牌号 获取 绑卡旧表中的银行卡号
+        if(oldBindTable!=null){
             UnBindCardUtil unBindCardUtil = new UnBindCardUtil();
 
             Map<String,Object> unionpayMap = new HashMap<String,Object>();
             String bindId = bankMapper.getNewBindTableCardNumByPlateNum(param.get("platenum").toString()); //解绑银行卡时 需要获取绑卡时上送的bindId
-            unionpayMap.put("cardNum",cardNum);
+            unionpayMap.put("cardNum",oldBindTable.get("card_num"));
             unionpayMap.put("bindId",bindId);
 
             Result result = unBindCardUtil.requestUnBindCard(req,resp,unionpayMap);

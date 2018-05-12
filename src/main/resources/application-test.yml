@@ -7,7 +7,6 @@ weixin:
     key: yeyrew
 
 
-
 #alibaba的druid数据库连接池配置
 spring:
     datasource:
@@ -33,6 +32,10 @@ spring:
         testOnReturn: false
         poolPreparedStatements: true
         maxOpenPreparedStatements: 20
+    mvc:
+      view:
+        suffix: /WEN-INF/view/
+        prefix: .jsp
 
 
 #spring data jpa 数据源配置

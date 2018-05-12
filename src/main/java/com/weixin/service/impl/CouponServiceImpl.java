@@ -152,7 +152,7 @@ public class CouponServiceImpl implements CouponService{
         if(couponList!=null&&couponList.size()>0){
             return ResultUtil.requestSuccess(JSONObject.toJSONString(couponList));
         }
-       return ResultUtil.requestSuccess("没有优惠券信息","没有优惠券信息","02");
+       return ResultUtil.requestSuccess("[]","没有优惠券信息","00");
     }
 
 

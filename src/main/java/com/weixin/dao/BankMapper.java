@@ -73,7 +73,7 @@ public interface BankMapper {
      *      platenum : 车牌号
      * @return
      */
-    public String getOldBindTableCardNumByPlateNum(Map<String,Object> param);
+    public Map<String,Object> getOldBindTableCardNumByPlateNum(Map<String,Object> param);
 
 
     /**

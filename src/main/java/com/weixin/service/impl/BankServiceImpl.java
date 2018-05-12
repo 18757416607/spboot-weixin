@@ -134,14 +134,16 @@ public class BankServiceImpl implements BankService{
      *      username : 手机号
      *      checkcode : 手机验证码
      * @return
-     *      -1：系统报错   00：成功  01：参数为空  02：表更新不成功   03：验证码失效,请重新获取验证码!  04:验证码错误!   05:银联返回的消息  06:车辆已有绑定银行卡
+     *      -1：系统报错   00：成功  01：参数为空  02：表更新不成功   03：验证码失效,请重新获取验证码!  04:验证码错误!   05:银联返回的消息 06:换绑时银行卡号一样
+     * 说明：
+     *    若该车牌号已有绑定银行卡就是先解绑 在 绑定
      * @throws Exception
      */
     @Transactional
     public Result bindBankCard(Map<String,Object> param, HttpServletRequest req, HttpServletResponse resp) throws Exception{
         logger.info("进入小程序绑定银行卡service");
         //获取redis中的验证码
-        /*Jedis jedis = RedisClient.getJedis();
+        Jedis jedis = RedisClient.getJedis();
         System.out.println("redis取出验证码："+jedis.get("xcx"+param.get("username").toString()));
         logger.info("小程序绑定银行卡-->前端-redis-key:"+jedis.get("xcx"+param.get("username").toString()));
         if(jedis.get("xcx"+param.get("username").toString())==null){
@@ -151,11 +153,52 @@ public class BankServiceImpl implements BankService{
         if(!jedis.get("xcx"+param.get("username").toString()).equals(param.get("checkcode"))){
             logger.info("小程序绑定银行卡-->验证码错误!");
             return ResultUtil.requestSuccess("验证码错误!","验证码错误!","04");
-        }*/
+        }
 
-        String unionId = bankMapper.getNewBindTableCardNumByPlateNum(param.get("platenum").toString());
-        if(unionId!=null&&!"".equals(unionId)){
-            return ResultUtil.requestSuccess("["+param.get("platenum")+"]该车辆下已有绑定银行卡","["+param.get("platenum")+"]该车辆下已有绑定银行卡","06");
+        param.put("bind_username",param.get("username"));  //给调用银联接口使用
+        param.put("bind_name",param.get("name"));          //给调用银联接口使用
+
+        boolean mark = false;  //用来表示 绑定还是换绑
+        //如果已有绑定银行卡,就先解绑 在进行绑定
+        String bindId = bankMapper.getNewBindTableCardNumByPlateNum(param.get("platenum").toString());  // 解绑银行卡时 需要获取绑卡时上送的bindId
+        if(bindId!=null&&!"".equals(bindId)){
+            Map<String,Object> oldBindTable = bankMapper.getOldBindTableCardNumByPlateNum(param); //根据 车牌号 获取 绑卡旧表中的银行卡号
+
+            param.put("username",oldBindTable.get("user_name"));
+            param.put("name",oldBindTable.get("real_name"));
+            if(oldBindTable!=null){
+                if(oldBindTable.get("card_num").equals(param.get("cardnum").toString())){
+                    return ResultUtil.requestSuccess("该卡号已经绑定,无需换绑","该卡号已经绑定,无需换绑","06");
+                }
+                UnBindCardUtil unBindCardUtil = new UnBindCardUtil();
+                Map<String,Object> unionpayMap = new HashMap<String,Object>();
+                unionpayMap.put("cardNum",oldBindTable.get("card_num"));
+                unionpayMap.put("bindId",bindId);
+                Result result = unBindCardUtil.requestUnBindCard(req,resp,unionpayMap);
+                if(result.getCode().equals("00")){
+                    int newCount = bankMapper.updateBaseUserCarBindUnionPay(param);  //更新 绑卡 新表信息
+                    if(newCount>0){
+                        int oldCount = bankMapper.updateBaseUserCarUnionpay(param);      //更新 绑卡 旧表信息
+                        if(oldCount>0){
+                            logger.info("小程序解绑银行卡service-->解绑成功");
+                            mark = true;
+                        }else{
+                            logger.info("小程序解绑银行卡service-->更新绑卡旧表受影响行数0行");
+                            return ResultUtil.requestSuccess("更新绑卡旧表受影响行数0行","更新绑卡新表受影响行数0行","02");
+                        }
+                    }else{
+                        logger.info("小程序解绑银行卡service-->更新绑卡新表受影响行数0行");
+                        return ResultUtil.requestSuccess("更新绑卡新表受影响行数0行","更新绑卡新表受影响行数0行","02");
+                    }
+                }else{
+                    logger.info("小程序解绑银行卡service-->解绑失败");
+                    return ResultUtil.requestFaild("解绑失败");
+                }
+            }else{
+                logger.info("小程序解绑银行卡service--> ["+param.get("platenum")+"]车牌还未绑定卡号");
+                return ResultUtil.requestSuccess("["+param.get("platenum")+"]车牌还未绑定卡号","["+param.get("platenum")+"]车牌还未绑定卡号","03");
+            }
+            //return ResultUtil.requestSuccess("["+param.get("platenum")+"]该车辆下已有绑定银行卡","["+param.get("platenum")+"]该车辆下已有绑定银行卡","06");
         }
 
         String cardBin = param.get("cardnum").toString().substring(0,6);  //获取用户输入卡号前6位
@@ -194,8 +237,12 @@ public class BankServiceImpl implements BankService{
                     param.put("unionpay_bind_id",baseUserCarBindUnionpay.getId());
                     int count2 = bankMapper.updateBaseUserCar(param);  //绑卡成功后  修改银联代扣开关为开启   unionpay_bind_id 里插入绑卡新表的id
                     logger.info("小程序绑定银行卡-->绑卡成功后  修改银联代扣开关为开启   unionpay_bind_id 里插入绑卡新表的id-->受影响行数:["+count2+"]");
+                    if(mark){
+                        logger.info("小程序绑定银行卡-->换绑成功");
+                        return ResultUtil.requestSuccess("换绑成功","换绑成功");
+                    }
                     logger.info("小程序绑定银行卡-->绑卡成功");
-                    return ResultUtil.requestSuccess("绑卡成功");
+                    return ResultUtil.requestSuccess("绑卡成功","绑卡成功");
                     /*if(count2>0){
                         logger.info("小程序绑定银行卡-->绑卡成功");
                         return ResultUtil.requestSuccess("绑卡成功");
@@ -232,188 +279,6 @@ public class BankServiceImpl implements BankService{
     }
 
 
-    /**
-     * 解绑银行卡
-     * @param param
-     *      {"token":"","platenum":""}
-     *      platenum : 车牌号
-     * @param req
-     * @param resp
-     * @return
-     *      -1：系统报错   00：成功  01：参数为空  02：表更新不成功 03:车牌号对应的银行卡号不存在
-     */
-    @Transactional
-    public Result UnBindBankCard(Map<String,Object> param, HttpServletRequest req, HttpServletResponse resp) throws Exception{
-        logger.info("进入小程序解绑银行卡service");
-        String cardNum = bankMapper.getOldBindTableCardNumByPlateNum(param); //根据 车牌号 获取 绑卡旧表中的银行卡号
-        if(cardNum!=null&&!"".equals(cardNum)){
-            UnBindCardUtil unBindCardUtil = new UnBindCardUtil();
-            Map<String,Object> unionpayMap = new HashMap<String,Object>();
-            String bindId = bankMapper.getNewBindTableCardNumByPlateNum(param.get("platenum").toString());  //解绑银行卡时 需要获取绑卡时上送的bindId
-            unionpayMap.put("cardNum",cardNum);
-            unionpayMap.put("bindId",bindId);
-            Result result = unBindCardUtil.requestUnBindCard(req,resp,unionpayMap);
-            if(result.getCode().equals("00")){
-                int newCount = bankMapper.updateBaseUserCarBindUnionPay(param);  //更新 绑卡 新表信息
-                if(newCount>0){
-                    int oldCount = bankMapper.updateBaseUserCarUnionpay(param);      //更新 绑卡 旧表信息
-                    if(oldCount>0){
-                        logger.info("小程序解绑银行卡service-->解绑成功");
-                        return ResultUtil.requestSuccess("解绑成功");
-                    }else{
-                        logger.info("小程序解绑银行卡service-->更新绑卡旧表受影响行数0行");
-                        return ResultUtil.requestSuccess("更新绑卡旧表受影响行数0行","更新绑卡新表受影响行数0行","02");
-                    }
-                }else{
-                    logger.info("小程序解绑银行卡service-->更新绑卡新表受影响行数0行");
-                    return ResultUtil.requestSuccess("更新绑卡新表受影响行数0行","更新绑卡新表受影响行数0行","02");
-                }
-            }else{
-                logger.info("小程序解绑银行卡service-->解绑失败");
-                return ResultUtil.requestFaild("解绑失败");
-            }
-        }else{
-            logger.info("小程序解绑银行卡service--车牌号对应的银行卡号不存在");
-            return ResultUtil.requestSuccess("车牌号对应的银行卡号不存在","车牌号对应的银行卡号不存在","03");
-        }
-    }
-
-
-    /**
-     * 切换绑定银行卡
-     * @param param
-     *      {"token":"","platenum":"","cardnum":"","name":"","username":"","checkcode":""}
-     *      platenum : 车牌号
-     *      cardnum : 银行卡号
-     *      name : 姓名
-     *      username : 手机号
-     *      checkcode : 手机验证码
-     * @return
-     *      -1：系统报错   00：成功  01：参数为空  02：表更新不成功   03：验证码失效,请重新获取验证码!  04:验证码错误!   05:银联返回的消息  06:车牌还未绑定卡号
-     * @throws Exception
-     */
-    @Transactional
-    public Result changeBindCard(Map<String,Object> param, HttpServletRequest req, HttpServletResponse resp) throws Exception{
-
-        logger.info("进入小程切换绑定银行卡service");
-        //获取redis中的验证码
-        Jedis jedis = RedisClient.getJedis();
-        System.out.println("redis取出验证码："+jedis.get("xcx"+param.get("username").toString()));
-        logger.info("小程切换绑定银行卡-->前端-redis-key:"+jedis.get("xcx"+param.get("username").toString()));
-        if(jedis.get("xcx"+param.get("username").toString())==null){
-            logger.info("小程切换绑定银行卡-->验证码失效,请重新获取验证码!");
-            return ResultUtil.requestSuccess("验证码失效,请重新获取验证码!","验证码失效,请重新获取验证码!","03");
-        }
-        if(!jedis.get("xcx"+param.get("username").toString()).equals(param.get("checkcode"))){
-            logger.info("小程切换绑定银行卡-->验证码错误!");
-            return ResultUtil.requestSuccess("验证码错误!","验证码错误!","04");
-        }
-
-
-        String cardNum = bankMapper.getOldBindTableCardNumByPlateNum(param); //根据 车牌号 获取 绑卡旧表中的银行卡号
-        if(cardNum!=null&&!"".equals(cardNum)){
-            UnBindCardUtil unBindCardUtil = new UnBindCardUtil();
-            Map<String,Object> unionpayMap = new HashMap<String,Object>();
-            String bindId = bankMapper.getNewBindTableCardNumByPlateNum(param.get("platenum").toString());  //解绑银行卡时 需要获取绑卡时上送的bindId
-            unionpayMap.put("cardNum",cardNum);
-            unionpayMap.put("bindId",bindId);
-            Result result = unBindCardUtil.requestUnBindCard(req,resp,unionpayMap);
-            if(result.getCode().equals("00")){
-                int newCount = bankMapper.updateBaseUserCarBindUnionPay(param);  //更新 绑卡 新表信息
-                if(newCount>0){
-                    int oldCount = bankMapper.updateBaseUserCarUnionpay(param);      //更新 绑卡 旧表信息
-                    if(oldCount>0){
-                        logger.info("小程序解绑银行卡service-->解绑成功");
-                    }else{
-                        logger.info("小程序解绑银行卡service-->更新绑卡旧表受影响行数0行");
-                        return ResultUtil.requestSuccess("更新绑卡旧表受影响行数0行","更新绑卡新表受影响行数0行","02");
-                    }
-                }else{
-                    logger.info("小程序解绑银行卡service-->更新绑卡新表受影响行数0行");
-                    return ResultUtil.requestSuccess("更新绑卡新表受影响行数0行","更新绑卡新表受影响行数0行","02");
-                }
-            }else{
-                logger.info("小程序解绑银行卡service-->解绑失败");
-                return ResultUtil.requestFaild("解绑失败");
-            }
-        }else{
-            logger.info("小程序解绑银行卡service--> ["+param.get("platenum")+"]车牌还未绑定卡号");
-            return ResultUtil.requestSuccess("["+param.get("platenum")+"]车牌还未绑定卡号","["+param.get("platenum")+"]车牌还未绑定卡号","03");
-        }
-
-
-
-
-        String cardBin = param.get("cardnum").toString().substring(0,6);  //获取用户输入卡号前6位
-        String cardnumlast = param.get("cardnum").toString().substring(param.get("cardnum").toString().length()-4,param.get("cardnum").toString().length());
-        param.put("id","");
-        Map<String,Object> bankInfo = bankMapper.getCardByBankName(cardBin); //根据银行卡号前六位 获取  所属银行名称
-        //添加 绑卡信息  新表
-        BaseUserCarBindUnionpay baseUserCarBindUnionpay = new BaseUserCarBindUnionpay();
-        baseUserCarBindUnionpay.setPlate_num(param.get("platenum").toString());
-        baseUserCarBindUnionpay.setCard_bin(cardBin);
-        baseUserCarBindUnionpay.setCard_num_last(cardnumlast);
-        baseUserCarBindUnionpay.setUser_name(param.get("username").toString());
-        baseUserCarBindUnionpay.setCard_bank(bankInfo.get("card_bank").toString());
-        baseUserCarBindUnionpay.setCard_type(bankInfo.get("card_type").toString());
-        int count = bankMapper.insertBaseUserCarBindUnionPay(baseUserCarBindUnionpay);
-        logger.info("小程切换绑定银行卡-->添加 绑卡信息  新表-->受影响行数:["+count+"]");
-        if(count>0){
-            //调用银联绑卡接口
-            BindCardUtil bindCardUtil = new BindCardUtil();
-            param.put("bindid",baseUserCarBindUnionpay.getId().toString());
-            Result result = bindCardUtil.requestBindCard(req,resp,param);
-            logger.info("小程切换绑定银行卡-->调用银联绑卡接口-->返回数据:["+result.getData()+"]");
-            if(result.getCode().equals("00")){
-                //添加 绑卡信息  旧表
-                BaseUserCarUnionpay baseUserCarUnionpay = new BaseUserCarUnionpay();
-                baseUserCarUnionpay.setUser_name(param.get("username").toString());
-                baseUserCarUnionpay.setPlate_num(param.get("platenum").toString());
-                baseUserCarUnionpay.setCard_num(param.get("cardnum").toString());
-                baseUserCarUnionpay.setReal_name(param.get("name").toString());
-                baseUserCarUnionpay.setPhone_num(param.get("username").toString());
-                baseUserCarUnionpay.setCard_bank(bankInfo.get("card_bank").toString());
-                baseUserCarUnionpay.setCard_type(bankInfo.get("card_type").toString());
-                int count1 = bankMapper.insertBaseUserCarUnionPay(baseUserCarUnionpay);
-                logger.info("小程切换绑定银行卡-->添加 绑卡信息  旧表-->受影响行数:["+count1+"]");
-                if(count1>0){
-                    param.put("unionpay_bind_id",baseUserCarBindUnionpay.getId());
-                    int count2 = bankMapper.updateBaseUserCar(param);  //绑卡成功后  修改银联代扣开关为开启   unionpay_bind_id 里插入绑卡新表的id
-                    logger.info("小程切换绑定银行卡-->绑卡成功后  修改银联代扣开关为开启   unionpay_bind_id 里插入绑卡新表的id-->受影响行数:["+count2+"]");
-                    if(count2>0){
-                        logger.info("小程切换绑定银行卡-->绑卡成功");
-                        return ResultUtil.requestSuccess("绑卡成功");
-                    }else{
-                        logger.info("小程切换绑定银行卡-->绑卡成功后  修改银联代扣开关为开启   unionpay_bind_id 里插入绑卡新表的id 受影响行数0行");
-                        return ResultUtil.requestSuccess("绑卡成功后  修改银联代扣开关为开启   unionpay_bind_id 里插入绑卡新表的id 受影响行数0行","绑卡成功后  修改银联代扣开关为开启   unionpay_bind_id 里插入绑卡新表的id 受影响行数0行","02");
-                    }
-                    /*int platenumCount = bankMapper.getIsBindCar(param.get("platenum").toString()); //判断某个车牌是否被绑定
-                    if(platenumCount==0){  //车牌号没有被绑定
-                        param.put("unionpaybindid",baseUserCarBindUnionpay.getId());
-                        int count2 = bankMapper.insertBaseUserCar(param);
-                        if(count2>0){
-                            return ResultUtil.requestSuccess("绑车且绑卡成功");
-                        }else{
-                            return ResultUtil.requestSuccess("添加绑车表受影响行数0行","添加绑卡旧表受影响行数0行","01");
-                        }
-                    }else{
-                        return ResultUtil.requestSuccess("绑卡成功");
-                    }*/
-                }else{
-                    logger.info("小程切换绑定银行卡-->添加绑卡旧表受影响行数0行");
-                    return ResultUtil.requestSuccess("添加绑卡旧表受影响行数0行","添加绑卡旧表受影响行数0行","02");
-                }
-            }else{
-                //由于先往绑卡信息表（新表）中插入一条数据, 进入这个else说明用户输入的三要求（姓名，手机号，银行卡号）不匹配
-                logger.info("小程切换绑定银行卡-->用户输入的三要求（姓名，手机号，银行卡号）不匹配");
-                bankMapper.deleteBaseUserCarBindUnionPay(baseUserCarBindUnionpay.getId());
-                return ResultUtil.requestSuccess(result.getMsg(),result.getMsg(),"05");
-            }
-        }else{
-            logger.info("小程切换绑定银行卡-->添加绑卡新表受影响行数0行");
-            return ResultUtil.requestSuccess("添加绑卡新表受影响行数0行","添加绑卡新表受影响行数0行","02");
-        }
-    }
 
 
 

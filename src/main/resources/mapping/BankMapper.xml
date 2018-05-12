@@ -4,7 +4,7 @@
 
 	<!-- 根据银行卡号前六位 获取  所属银行名称 -->
 	<select id="getCardByBankName" parameterType="java.lang.String" resultType="java.util.Map">
-		SELECT card_bank,card_type FROM base_card_bin WHERE card_bin like CONCAT('%',#{cardbin},'%')
+		SELECT card_bank,card_type FROM base_card_bin WHERE card_bin like CONCAT('%',#{cardbin},'%') limit 1
 	</select>
 
 	<!-- 获取 银行活动 列表 -->
@@ -41,8 +41,8 @@
 	</insert>
 
 	<!-- 根据 车牌号 获取 绑卡旧表中的银行卡号   -->
-	<select id="getOldBindTableCardNumByPlateNum" parameterType="java.util.Map" resultType="java.lang.String">
-		SELECT card_num FROM base_user_car_unionpay WHERE plate_num = #{platenum} and  is_bind = 1
+	<select id="getOldBindTableCardNumByPlateNum" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT card_num,user_name,real_name FROM base_user_car_unionpay WHERE plate_num = #{platenum} and  is_bind = 1
 	</select>
 
 	<!-- 更新 绑卡 旧表信息 -->

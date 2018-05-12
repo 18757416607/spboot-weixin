@@ -89,8 +89,8 @@ public class BindCardUtil {
         Map<String,String> customerInfoMap = new HashMap<String,String>();
         //customerInfoMap.put("certifTp", "01");						//证件类型
         //customerInfoMap.put("certifId", "341126197709218366");		//证件号码
-        customerInfoMap.put("customerNm", param.get("name").toString());					//姓名
-        customerInfoMap.put("phoneNo", param.get("username").toString());			    //手机号
+        customerInfoMap.put("customerNm", param.get("bind_name").toString());					//姓名
+        customerInfoMap.put("phoneNo", param.get("bind_username").toString());			    //手机号
         //customerInfoMap.put("pin", "123456");						//密码
         //customerInfoMap.put("cvn2", "123");           			    //卡背面的cvn2三位数字
         //customerInfoMap.put("expired", "1711");  				    //有效期 年在前月在后
